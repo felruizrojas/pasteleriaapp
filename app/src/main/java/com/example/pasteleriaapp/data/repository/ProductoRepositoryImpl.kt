@@ -23,6 +23,13 @@ class ProductoRepositoryImpl (
         return productoDao.obtenerProductoPorId(idProducto)?.toProducto()
     }
 
+    override fun obtenerProductosPorCategoria(idCategoria: Int): Flow<List<Producto>> {
+        return productoDao.obtenerProductosPorCategoria(idCategoria)
+            .map { entities ->
+                entities.map { it.toProducto() }
+            }
+    }
+
     override suspend fun insertarProducto(producto: Producto) {
         productoDao.insertarProducto(producto.toProductoEntity())
     }
