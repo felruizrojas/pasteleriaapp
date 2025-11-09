@@ -1,15 +1,27 @@
+# Archivos y carpetas de Android Studio
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.gradle/
 local.properties
+/.idea/
+/.idea/*
+!.idea/codeStyles
+.DS_Store
+
+# Compilación
+/build/
+.cxx/
+.externalNativeBuild/
+captures/
+
+# Configuraciones de sistema
+/local.properties
+Thumbs.db
+
+# Ignorar archivos de perfil de inspección (no necesarios)
+.idea/inspectionProfiles/
+
+# Archivos temporales o de cache
+*.log
+*.tmp
+*.cache
+
