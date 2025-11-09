@@ -33,7 +33,7 @@ class CategoriaRepositoryImpl (
     }
 
     override suspend fun actualizarCategoria(categoria: Categoria) {
-        return categoriaDao.actualizarCategoria(categoria.toCategoriaEntity())
+        categoriaDao.actualizarCategoria(categoria.toCategoriaEntity())
     }
 
     override suspend fun eliminarCategoria(categoria: Categoria) {

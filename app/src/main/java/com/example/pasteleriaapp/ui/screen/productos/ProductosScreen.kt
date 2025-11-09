@@ -26,10 +26,6 @@ import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.domain.model.Producto
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModel
 
-/**
- * Pantalla que muestra la lista de productos.
- * NOTA: Actualmente muestra TODOS los productos.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoListScreen(

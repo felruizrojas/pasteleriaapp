@@ -3,8 +3,8 @@ package com.example.pasteleriaapp.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.pasteleriaapp.data.repository.ProductoRepositoryImpl
 import com.example.pasteleriaapp.domain.model.Producto
+import com.example.pasteleriaapp.domain.repository.ProductoRepository
 import com.example.pasteleriaapp.ui.state.ProductoUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 class ProductoViewModel (
-    private val repositoryImpl: ProductoRepositoryImpl,
+    private val repository: ProductoRepository,
     private val idCategoria: Int
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProductoUiState())
@@ -27,7 +27,7 @@ class ProductoViewModel (
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(estaCargando = true)
 
-            repositoryImpl.obtenerProductosPorCategoria(idCategoria)
+            repository.obtenerProductosPorCategoria(idCategoria)
                 .catch { exception ->
                     _uiState.value = _uiState.value.copy(
                         estaCargando = false,
@@ -46,19 +46,19 @@ class ProductoViewModel (
 
     fun agregarProducto(producto: Producto) {
         viewModelScope.launch {
-            repositoryImpl.insertarProducto(producto)
+            repository.insertarProducto(producto)
         }
     }
 
     fun actualizarProducto(producto: Producto) {
         viewModelScope.launch {
-            repositoryImpl.actualizarProducto(producto)
+            repository.actualizarProducto(producto)
         }
     }
 
     fun eliminarProducto(producto: Producto) {
         viewModelScope.launch {
-            repositoryImpl.eliminarProducto(producto)
+            repository.eliminarProducto(producto)
         }
     }
 }
@@ -67,7 +67,7 @@ class ProductoViewModel (
  * que le inyectemos el RepositorioProductos.
  */
     class ProductoViewModelFactory(
-        private val repositoryImpl: ProductoRepositoryImpl,
+        private val repository: ProductoRepository,
         private val idCategoria: Int
     ) : ViewModelProvider.Factory {
 
@@ -75,7 +75,7 @@ class ProductoViewModel (
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ProductoViewModel::class.java)) {
             return ProductoViewModel(
-                repositoryImpl,
+                repository,
                 idCategoria = idCategoria
             ) as T
         }

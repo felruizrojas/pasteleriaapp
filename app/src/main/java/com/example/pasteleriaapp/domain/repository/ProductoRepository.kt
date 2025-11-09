@@ -19,4 +19,6 @@ interface ProductoRepository {
     suspend fun eliminarProducto(producto: Producto)
 
     suspend fun eliminarProductos(productos: List<Producto>)
+
+    suspend fun eliminarTodasLosProductos()
 }

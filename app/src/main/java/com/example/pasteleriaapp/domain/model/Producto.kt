@@ -1,7 +1,7 @@
 package com.example.pasteleriaapp.domain.model
 
 data class Producto (
-    val idProducto: Int,
+    val idProducto: Int = 0,
     val idCategoria: Int,
     val codigoProducto: String,
     val nombreProducto: String,

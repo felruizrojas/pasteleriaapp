@@ -61,8 +61,11 @@ fun AppNavGraph(
             val idCategoria = backStackEntry.arguments?.getInt(Rutas.ARG_ID_CATEGORIA)
             requireNotNull(idCategoria) { "idCategoria no encontrado en la ruta" }
 
-            val factory = ProductoViewModelFactory(productoRepository as ProductoRepositoryImpl, idCategoria)
-            val viewModel: ProductoViewModel = viewModel(factory = factory)
+            val factory = ProductoViewModelFactory(productoRepository, idCategoria)
+            val viewModel: ProductoViewModel = viewModel(
+                key = "producto_$idCategoria",
+                factory = factory
+            )
 
             ProductoListScreen(
                 viewModel = viewModel,
