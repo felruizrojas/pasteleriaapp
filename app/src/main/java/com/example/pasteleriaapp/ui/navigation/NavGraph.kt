@@ -17,6 +17,7 @@ import com.example.pasteleriaapp.domain.repository.CarritoRepository
 import com.example.pasteleriaapp.domain.repository.CategoriaRepository
 import com.example.pasteleriaapp.domain.repository.ProductoRepository
 import com.example.pasteleriaapp.ui.screen.home.HomeScreen
+import com.example.pasteleriaapp.ui.screen.carrito.CarritoScreen
 import com.example.pasteleriaapp.ui.screen.productos.CategoriasScreen
 import com.example.pasteleriaapp.ui.screen.productos.ProductoDetalleScreen
 import com.example.pasteleriaapp.ui.screen.productos.ProductoFormScreen
@@ -25,7 +26,8 @@ import com.example.pasteleriaapp.ui.viewmodel.CategoriaViewModel
 import com.example.pasteleriaapp.ui.viewmodel.CategoriaViewModelFactory
 import com.example.pasteleriaapp.ui.viewmodel.ProductoDetalleViewModel
 import com.example.pasteleriaapp.ui.viewmodel.ProductoDetalleViewModelFactory
-// Asegúrate también de haber creado ProductoFormViewModel y su Factory
+import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModel
+import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModelFactory
 import com.example.pasteleriaapp.ui.viewmodel.ProductoFormViewModel
 import com.example.pasteleriaapp.ui.viewmodel.ProductoFormViewModelFactory
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModel
@@ -55,6 +57,9 @@ fun AppNavGraph(
                 },
                 onLoginClick = {
                     navController.navigate(Rutas.LOGIN)
+                },
+                onCarritoClick = { // <-- LAMBDA AÑADIDO
+                    navController.navigate(Rutas.CARRITO)
                 }
             )
         }
@@ -68,6 +73,9 @@ fun AppNavGraph(
                 viewModel = viewModel,
                 onCategoriaClick = { idCategoria ->
                     navController.navigate(Rutas.obtenerRutaProductos(idCategoria))
+                },
+                onCarritoClick = { // <-- LAMBDA AÑADIDO
+                    navController.navigate(Rutas.CARRITO)
                 }
             )
         }
@@ -178,8 +186,22 @@ fun AppNavGraph(
         composable(Rutas.LOGIN) {
             PlaceholderScreen(texto = "Pantalla 'Inicio de Sesión'")
         }
+
+        // --- 7. ¡NUEVA RUTA DEL CARRITO! ---
+        composable(Rutas.CARRITO) {
+            val factory = CarritoViewModelFactory(carritoRepository)
+            val viewModel: CarritoViewModel = viewModel(factory = factory)
+
+            CarritoScreen(
+                viewModel = viewModel,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
+
 
 /**
  * Una pantalla genérica temporal para que la navegación funcione.

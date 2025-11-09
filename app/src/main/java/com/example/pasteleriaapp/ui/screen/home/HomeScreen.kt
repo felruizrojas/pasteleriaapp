@@ -18,6 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,11 +29,20 @@ fun HomeScreen(
     // --- MODIFICADO: Ahora pedimos 3 lambdas ---
     onCatalogoClick: () -> Unit,
     onNosotrosClick: () -> Unit,
-    onLoginClick: () -> Unit
+    onLoginClick: () -> Unit,
+    onCarritoClick: () -> Unit
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Pastelería Mil Sabores") })
+            TopAppBar(
+                title = { Text("Pastelería Mil Sabores") },
+                actions = {
+                    IconButton(onClick = onCarritoClick)
+                    {
+                        Icon(Icons.Default.ShoppingCart, "Ver carrito")
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         Column(

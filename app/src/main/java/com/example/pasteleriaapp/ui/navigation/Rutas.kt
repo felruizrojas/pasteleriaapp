@@ -10,6 +10,8 @@ object Rutas {
     const val CATEGORIAS = "categorias" // <-- Esta será tu ruta de "Catálogo"
     const val NOSOTROS = "nosotros"     // <-- NUEVA
     const val LOGIN = "login"           // <-- NUEVA
+
+    const val CARRITO = "carrito"       // <-- NUEVA
     private const val PRODUCTOS = "productos"
 
     // --- Rutas Compuestas (con argumentos) ---

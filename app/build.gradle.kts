@@ -53,6 +53,10 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    // --- ¡¡AÑADE ESTA LÍNEA!! ---
+    // Esta biblioteca contiene los íconos 'Remove', 'ShoppingCart', 'Share', etc.
+    implementation("androidx.compose.material:material-icons-extended")
+
     // Room Database
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

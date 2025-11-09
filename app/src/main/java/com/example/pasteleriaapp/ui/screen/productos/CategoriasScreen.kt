@@ -36,7 +36,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.domain.model.Categoria
 import com.example.pasteleriaapp.ui.viewmodel.CategoriaViewModel
-import com.example.pasteleriaapp.R // <-- IMPORTANTE: Importa R
+import com.example.pasteleriaapp.R
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 /**
  * Pantalla que muestra la lista de categorías.
@@ -45,13 +49,20 @@ import com.example.pasteleriaapp.R // <-- IMPORTANTE: Importa R
 @Composable
 fun CategoriasScreen(
     viewModel: CategoriaViewModel,
-    onCategoriaClick: (Int) -> Unit // Lambda para navegar
+    onCategoriaClick: (Int) -> Unit, // Lambda para navegar
+    onCarritoClick: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Catálogo de Productos") })
+            TopAppBar(title = { Text("Catálogo de Productos") },
+                actions = {
+                    IconButton(onClick = onCarritoClick) {
+                        Icon(Icons.Default.ShoppingCart, "Ver carrito")
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         Box(
