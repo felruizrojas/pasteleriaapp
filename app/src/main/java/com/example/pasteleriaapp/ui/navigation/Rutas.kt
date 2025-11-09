@@ -12,6 +12,10 @@ object Rutas {
     const val LOGIN = "login"           // <-- NUEVA
 
     const val CARRITO = "carrito"       // <-- NUEVA
+
+    const val REGISTRO = "registro"
+
+    const val AUTH_FLOW = "auth_flow"
     private const val PRODUCTOS = "productos"
 
     // --- Rutas Compuestas (con argumentos) ---

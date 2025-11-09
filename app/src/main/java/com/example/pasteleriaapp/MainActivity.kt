@@ -13,6 +13,8 @@ import com.example.pasteleriaapp.data.repository.CategoriaRepositoryImpl
 import com.example.pasteleriaapp.data.repository.CarritoRepositoryImpl
 // --- ¡ESTA ES LA LÍNEA CORREGIDA! ---
 import com.example.pasteleriaapp.domain.repository.CarritoRepository
+import com.example.pasteleriaapp.data.repository.UsuarioRepositoryImpl
+import com.example.pasteleriaapp.domain.repository.UsuarioRepository
 import com.example.pasteleriaapp.data.repository.ProductoRepositoryImpl
 import com.example.pasteleriaapp.ui.navigation.AppNavGraph
 import com.example.pasteleriaapp.ui.theme.PasteleriaAppTheme
@@ -31,6 +33,7 @@ class MainActivity : ComponentActivity() {
         val categoriaRepository = CategoriaRepositoryImpl(database.categoriaDao())
         val productoRepository = ProductoRepositoryImpl(database.productoDao())
         val carritoRepository = CarritoRepositoryImpl(database.carritoDao())
+        val usuarioRepository = UsuarioRepositoryImpl(database.usuarioDao())
 
         // --- 2. Configuración del Contenido ---
         setContent {
@@ -45,6 +48,7 @@ class MainActivity : ComponentActivity() {
                     categoriaRepository = categoriaRepository, // Le pasamos el repositorio
                     productoRepository = productoRepository,   // Le pasamos el repositorio
                     carritoRepository = carritoRepository,
+                    usuarioRepository = usuarioRepository,
                     modifier = Modifier.fillMaxSize()
                 )
             }
