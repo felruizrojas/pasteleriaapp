@@ -16,6 +16,9 @@ object Rutas {
     const val EDITAR_PERFIL = "editar_perfil"
     const val CHECKOUT = "checkout" // <-- RUTA NUEVA
     const val MIS_PEDIDOS = "pedidos" // <-- RUTA NUEVA
+    const val BLOG = "blog"
+    const val ARG_POST_ID = "postId"
+    const val BLOG_DETALLE_RUTA = "$BLOG/{$ARG_POST_ID}"
     private const val PRODUCTOS = "productos"
 
 
@@ -50,5 +53,9 @@ object Rutas {
 
     fun obtenerRutaDetallePedido(idPedido: Int): String {
         return "pedidos/$idPedido"
+    }
+
+    fun obtenerRutaBlogDetalle(postId: String): String {
+        return "$BLOG/$postId"
     }
 }

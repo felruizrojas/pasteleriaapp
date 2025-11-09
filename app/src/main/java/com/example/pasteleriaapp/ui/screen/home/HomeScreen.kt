@@ -25,6 +25,7 @@ fun HomeScreen(
     onNavigateToCatalogo: () -> Unit,
     onNavigateToNosotros: () -> Unit,
     onNavigateToCarrito: () -> Unit,
+    onNavigateToBlog: () -> Unit,
     onLogoutSuccess: () -> Unit
 ) {
     val state by authViewModel.uiState.collectAsState()
@@ -82,6 +83,13 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Catálogo de Productos")
+            }
+
+            Button(
+                onClick = onNavigateToBlog,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Blog de Repostería")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
