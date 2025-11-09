@@ -4,20 +4,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.pasteleriaapp.domain.model.Producto
-import com.example.pasteleriaapp.domain.repository.ProductoRepository
+import com.example.pasteleriaapp.domain.repository.ProductoRepository // <-- Asegúrate que sea la interfaz
 import com.example.pasteleriaapp.ui.state.ProductoUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ProductoViewModel (
-    private val repository: ProductoRepository,
+    private val repository: ProductoRepository, // <-- Usando la interfaz (corregido de antes)
     private val idCategoria: Int
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProductoUiState())
     val uiState: StateFlow<ProductoUiState> = _uiState.asStateFlow()
+
+    // --- NUEVO: Lista interna para guardar todos los productos ---
+    private var listaCompletaProductos: List<Producto> = emptyList()
 
     init {
         cargarProductos()
@@ -25,51 +29,57 @@ class ProductoViewModel (
 
     fun cargarProductos() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(estaCargando = true)
+            _uiState.update { it.copy(estaCargando = true) }
 
             repository.obtenerProductosPorCategoria(idCategoria)
                 .catch { exception ->
-                    _uiState.value = _uiState.value.copy(
-                        estaCargando = false,
-                        error = exception.message ?: "Error desconocido"
-                    )
+                    _uiState.update {
+                        it.copy(estaCargando = false, error = exception.message ?: "Error desconocido")
+                    }
                 }
                 .collect { productos ->
-                    _uiState.value = _uiState.value.copy(
-                        estaCargando = false,
-                        productos = productos,
-                        error = null
-                    )
+                    // Guardamos la lista completa internamente
+                    listaCompletaProductos = productos
+
+                    // Actualizamos la UI (inicialmente sin filtro)
+                    _uiState.update {
+                        it.copy(
+                            estaCargando = false,
+                            productos = productos, // La lista filtrada es igual a la completa al inicio
+                            error = null
+                        )
+                    }
                 }
         }
     }
 
-    fun agregarProducto(producto: Producto) {
-        viewModelScope.launch {
-            repository.insertarProducto(producto)
-        }
-    }
+    // --- FUNCIÓN NUEVA: Se llama cada vez que el usuario escribe ---
+    fun onSearchQueryChange(query: String) {
+        // 1. Actualiza el texto en la UI
+        _uiState.update { it.copy(searchQuery = query) }
 
-    fun actualizarProducto(producto: Producto) {
-        viewModelScope.launch {
-            repository.actualizarProducto(producto)
+        // 2. Filtra la lista
+        val listaFiltrada = if (query.isBlank()) {
+            listaCompletaProductos // Si no hay búsqueda, muestra todo
+        } else {
+            // Filtra por nombre de producto (ignora mayúsculas/minúsculas)
+            listaCompletaProductos.filter { producto ->
+                producto.nombreProducto.contains(query, ignoreCase = true)
+            }
         }
-    }
 
-    fun eliminarProducto(producto: Producto) {
-        viewModelScope.launch {
-            repository.eliminarProducto(producto)
-        }
+        // 3. Actualiza la lista de productos que ve el usuario
+        _uiState.update { it.copy(productos = listaFiltrada) }
     }
 }
+
 /**
- * Factory para crear el ProductoViewModel, ya que necesita
- * que le inyectemos el RepositorioProductos.
+ * Factory (Corregida de nuestros pasos anteriores)
  */
-    class ProductoViewModelFactory(
-        private val repository: ProductoRepository,
-        private val idCategoria: Int
-    ) : ViewModelProvider.Factory {
+class ProductoViewModelFactory(
+    private val repository: ProductoRepository, // <-- Usando la interfaz
+    private val idCategoria: Int
+) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

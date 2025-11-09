@@ -1,6 +1,5 @@
 package com.example.pasteleriaapp.ui.screen.productos
 
-// --- IMPORTS NECESARIOS (Añadidos y modificados) ---
 import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
@@ -19,6 +18,10 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+// --- NUEVOS IMPORTS ---
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+// --- FIN NUEVOS IMPORTS ---
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,6 +30,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField // <-- NUEVO IMPORT
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -41,7 +45,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.pasteleriaapp.R // <-- Importar R
+import com.example.pasteleriaapp.R
 import com.example.pasteleriaapp.domain.model.Producto
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModel
 
@@ -57,17 +61,42 @@ fun ProductoListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Productos") }, // Puedes hacerlo dinámico
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
+            // --- MODIFICADO: TopAppBar ahora es una Columna ---
+            Column {
+                TopAppBar(
+                    title = { Text("Productos") },
+                    navigationIcon = {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Volver"
+                            )
+                        }
                     }
-                }
-            )
+                )
+
+                // --- BARRA DE BÚSQUEDA AÑADIDA ---
+                OutlinedTextField(
+                    value = state.searchQuery,
+                    onValueChange = { viewModel.onSearchQueryChange(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = { Text("Buscar producto en esta categoría...") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, "Buscar")
+                    },
+                    trailingIcon = {
+                        // Icono para limpiar la búsqueda
+                        if (state.searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                Icon(Icons.Default.Close, "Limpiar")
+                            }
+                        }
+                    },
+                    singleLine = true
+                )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddProductoClick) {
@@ -90,14 +119,20 @@ fun ProductoListScreen(
                     Text(text = "Error: ${state.error}")
                 }
 
+                // Caso 1: Hay productos (la lista filtrada no está vacía)
                 state.hayProductos -> {
-                    // --- MODIFICADO: Usamos una Grilla ---
                     ProductosGrid(
-                        productos = state.productos,
+                        productos = state.productos, // Muestra la lista filtrada
                         onProductoClick = onProductoClick
                     )
                 }
 
+                // Caso 2: No hay productos POR EL FILTRO
+                !state.hayProductos && state.searchQuery.isNotEmpty() -> {
+                    Text(text = "No se encontraron resultados para \"${state.searchQuery}\"")
+                }
+
+                // Caso 3: No hay productos EN LA CATEGORÍA (búsqueda vacía)
                 else -> {
                     Text(text = "No hay productos en esta categoría.")
                 }
@@ -106,17 +141,16 @@ fun ProductoListScreen(
     }
 }
 
-/**
- * --- NUEVO COMPOSABLE ---
- * Muestra la grilla de productos.
- */
+// --- El resto del archivo (ProductosGrid, ProductoCard, painterResourceFromName) ---
+// --- NO NECESITA CAMBIOS ---
+
 @Composable
 private fun ProductosGrid(
     productos: List<Producto>,
     onProductoClick: (Int) -> Unit
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2), // Grilla de 2 columnas
+        columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -131,17 +165,12 @@ private fun ProductosGrid(
     }
 }
 
-/**
- * --- NUEVO COMPOSABLE ---
- * Representa una sola Card de producto, mostrando solo imagen y nombre.
- */
 @Composable
 private fun ProductoCard(
     producto: Producto,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
-    // Usamos el nombre de la imagen del producto
     val imageResId = painterResourceFromName(context, producto.imagenProducto)
 
     Card(
@@ -156,11 +185,11 @@ private fun ProductoCard(
                 contentDescription = "Imagen de ${producto.nombreProducto}",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f), // Imagen cuadrada
+                    .aspectRatio(1f),
                 contentScale = ContentScale.Crop
             )
             Text(
-                text = producto.nombreProducto, // <-- Solo el nombre
+                text = producto.nombreProducto,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(12.dp),
@@ -172,22 +201,17 @@ private fun ProductoCard(
     }
 }
 
-/**
- * --- FUNCIÓN AUXILIAR (copiada de CategoriasScreen) ---
- * Obtiene un ID de drawable a partir de su nombre (String).
- */
 @DrawableRes
 @Composable
 private fun painterResourceFromName(context: Context, resName: String): Int {
     return try {
         val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
         if (resId == 0) {
-            // Imagen de fallback por si no se encuentra
             R.drawable.ic_launcher_background
         } else {
             resId
         }
     } catch (e: Exception) {
-        R.drawable.ic_launcher_background // Fallback en caso de error
+        R.drawable.ic_launcher_background
     }
 }
