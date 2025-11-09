@@ -36,5 +36,5 @@ interface ProductoDao {
     suspend fun eliminarProductos(productos: List<ProductoEntity>)
 
     @Query("DELETE FROM producto")
-    suspend fun eliminarTodasLosProductos()
+    suspend fun eliminarTodosLosProductos()
 }

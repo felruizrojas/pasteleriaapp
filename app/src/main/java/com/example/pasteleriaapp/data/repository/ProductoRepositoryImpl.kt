@@ -51,4 +51,8 @@ class ProductoRepositoryImpl (
         val entities = productos.map { it.toProductoEntity() }
         productoDao.eliminarProductos(entities)
     }
+
+    override suspend fun eliminarTodasLosProductos() {
+        productoDao.eliminarTodosLosProductos()
+    }
 }
