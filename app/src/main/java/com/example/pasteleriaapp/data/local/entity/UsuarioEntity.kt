@@ -34,6 +34,8 @@ data class UsuarioEntity(
     val tieneDescuentoCodigo: Boolean = false,
     @ColumnInfo(defaultValue = "0")
     val esEstudianteDuoc: Boolean = false,
+    @ColumnInfo(defaultValue = "0")
+    val estaBloqueado: Boolean = false,
 
     @ColumnInfo(defaultValue = "NULL")
     val fotoUrl: String? = null
@@ -56,7 +58,8 @@ fun UsuarioEntity.toUsuario() = Usuario(
     tieneDescuentoEdad = tieneDescuentoEdad,
     tieneDescuentoCodigo = tieneDescuentoCodigo,
     esEstudianteDuoc = esEstudianteDuoc,
-    fotoUrl = fotoUrl
+    fotoUrl = fotoUrl,
+    estaBloqueado = estaBloqueado
 )
 
 fun Usuario.toUsuarioEntity() = UsuarioEntity(
@@ -74,5 +77,6 @@ fun Usuario.toUsuarioEntity() = UsuarioEntity(
     tieneDescuentoEdad = tieneDescuentoEdad,
     tieneDescuentoCodigo = tieneDescuentoCodigo,
     esEstudianteDuoc = esEstudianteDuoc,
+    estaBloqueado = estaBloqueado,
     fotoUrl = fotoUrl
 )

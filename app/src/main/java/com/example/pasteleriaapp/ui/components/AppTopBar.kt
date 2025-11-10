@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -42,7 +43,8 @@ data class AppTopBarActions(
     val onOpenInstagram: () -> Unit,
     val onCartClick: () -> Unit,
     val onProfileClick: () -> Unit,
-    val onLoginClick: () -> Unit
+    val onLoginClick: () -> Unit,
+    val onNavigateToAdmin: (() -> Unit)? = null
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,6 +120,15 @@ fun AppTopBar(
             ) {
                 IconButton(onClick = actions.onCartClick) {
                     Icon(Icons.Default.ShoppingCart, contentDescription = "Carrito")
+                }
+            }
+
+            actions.onNavigateToAdmin?.let { navigateToAdmin ->
+                IconButton(onClick = navigateToAdmin) {
+                    Icon(
+                        imageVector = Icons.Default.AdminPanelSettings,
+                        contentDescription = "Administración"
+                    )
                 }
             }
 

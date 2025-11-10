@@ -88,7 +88,13 @@ class AuthViewModel(
                 if (!correo.isNullOrBlank()) {
                     val usuario = repository.obtenerUsuarioPorCorreo(correo)
                     if (usuario != null) {
-                        _uiState.update { it.copy(usuarioActual = usuario, fotoUri = usuario.fotoUrl?.toUri()) }
+                        if (usuario.estaBloqueado) {
+                            val prefs = context.getSharedPreferences("pasteleria_prefs", Context.MODE_PRIVATE)
+                            prefs.edit().remove("logged_user_correo").apply()
+                            _uiState.update { it.copy(usuarioActual = null, fotoUri = null) }
+                        } else {
+                            _uiState.update { it.copy(usuarioActual = usuario, fotoUri = usuario.fotoUrl?.toUri()) }
+                        }
                     }
                 }
             } catch (_: Exception) {

@@ -20,11 +20,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
+import com.example.pasteleriaapp.domain.model.TipoUsuario
 import com.example.pasteleriaapp.domain.repository.CarritoRepository
 import com.example.pasteleriaapp.domain.repository.CategoriaRepository
 import com.example.pasteleriaapp.domain.repository.PedidoRepository
 import com.example.pasteleriaapp.domain.repository.ProductoRepository
 import com.example.pasteleriaapp.domain.repository.UsuarioRepository
+import com.example.pasteleriaapp.ui.screen.admin.UsuariosAdminScreen
 import com.example.pasteleriaapp.ui.screen.auth.LoginScreen
 import com.example.pasteleriaapp.ui.screen.auth.RegisterScreen
 import com.example.pasteleriaapp.ui.screen.carrito.CarritoScreen
@@ -56,6 +58,8 @@ import com.example.pasteleriaapp.ui.viewmodel.ProductoFormViewModelFactory
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModel
 import com.example.pasteleriaapp.ui.viewmodel.ProductoViewModelFactory
 import com.example.pasteleriaapp.ui.screen.nosotros.NosotrosScreen
+import com.example.pasteleriaapp.ui.viewmodel.UserManagementViewModel
+import com.example.pasteleriaapp.ui.viewmodel.UserManagementViewModelFactory
 
 @Composable
 fun AppNavGraph(
@@ -87,6 +91,9 @@ fun AppNavGraph(
 
     val isLoggedIn = authState.usuarioActual != null
     val badgeCount = carritoUiState.totalArticulos
+    val puedeAdministrar = authState.usuarioActual?.let {
+        it.tipoUsuario == TipoUsuario.superAdmin || it.tipoUsuario == TipoUsuario.Administrador
+    } == true
 
     LaunchedEffect(authState.logoutSuccess) {
         if (authState.logoutSuccess) {
@@ -115,7 +122,10 @@ fun AppNavGraph(
         onOpenInstagram = openInstagram,
         onCartClick = { navController.navigateSingleTop(Rutas.CARRITO) },
         onProfileClick = { navController.navigateSingleTop(Rutas.PERFIL) },
-        onLoginClick = { navController.navigateSingleTop(Rutas.AUTH_FLOW) }
+        onLoginClick = { navController.navigateSingleTop(Rutas.AUTH_FLOW) },
+        onNavigateToAdmin = if (puedeAdministrar) {
+            { navController.navigateSingleTop(Rutas.ADMIN_USUARIOS) }
+        } else null
     )
 
     NavHost(
@@ -278,11 +288,42 @@ fun AppNavGraph(
                 onNavigateToMisPedidos = {
                     navController.navigate(Rutas.MIS_PEDIDOS)
                 },
+                onNavigateToAdminPanel = {
+                    navController.navigateSingleTop(Rutas.ADMIN_USUARIOS)
+                },
                 badgeCount = badgeCount,
                 isLoggedIn = isLoggedIn,
                 topBarActions = topBarActions,
                 onLogout = onLogout
             )
+        }
+
+        // --- 9b. RUTA ADMINISTRACIÓN DE USUARIOS ---
+        composable(Rutas.ADMIN_USUARIOS) {
+            val usuarioActual = authState.usuarioActual
+            if (usuarioActual == null ||
+                (usuarioActual.tipoUsuario != TipoUsuario.superAdmin &&
+                        usuarioActual.tipoUsuario != TipoUsuario.Administrador)
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No tienes permiso para acceder a esta sección.")
+                }
+            } else {
+                val factory = UserManagementViewModelFactory(usuarioRepository)
+                val adminViewModel: UserManagementViewModel = viewModel(factory = factory)
+                UsuariosAdminScreen(
+                    viewModel = adminViewModel,
+                    currentUser = usuarioActual,
+                    onBackClick = { navController.popBackStack() },
+                    badgeCount = badgeCount,
+                    isLoggedIn = isLoggedIn,
+                    topBarActions = topBarActions,
+                    onLogout = onLogout
+                )
+            }
         }
 
         // --- 10. RUTA EDITAR PERFIL ---

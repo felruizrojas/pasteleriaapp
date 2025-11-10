@@ -17,5 +17,7 @@ data class Usuario(
     val tieneDescuentoCodigo: Boolean = false,
     val esEstudianteDuoc: Boolean = false,
 
-    val fotoUrl: String? = null
+    val fotoUrl: String? = null,
+
+    val estaBloqueado: Boolean = false
 )

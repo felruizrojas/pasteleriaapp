@@ -14,7 +14,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -38,6 +42,8 @@ fun VoiceTextField(
     val permissionState = rememberPermissionState(
         android.Manifest.permission.RECORD_AUDIO
     )
+
+    var microphoneRequestAttempted by rememberSaveable { mutableStateOf(false) }
 
     val speechRecognizerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -80,6 +86,7 @@ fun VoiceTextField(
                 if (permissionState.status.isGranted) {
                     launchSpeechToText()
                 } else {
+                    microphoneRequestAttempted = true
                     permissionState.launchPermissionRequest()
                 }
             }) {
@@ -91,9 +98,17 @@ fun VoiceTextField(
         }
     )
 
-    SideEffect {
-        if (!permissionState.status.isGranted && !permissionState.status.shouldShowRationale) {
-            // El usuario denegó permanentemente.
+    LaunchedEffect(permissionState.status) {
+        if (
+            microphoneRequestAttempted &&
+            !permissionState.status.isGranted &&
+            !permissionState.status.shouldShowRationale
+        ) {
+            Toast.makeText(
+                context,
+                "Permiso de micrófono desactivado. Actívalo en Ajustes.",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 }

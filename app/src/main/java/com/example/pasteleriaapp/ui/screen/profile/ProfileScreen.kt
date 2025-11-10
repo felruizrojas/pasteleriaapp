@@ -36,6 +36,7 @@ fun ProfileScreen(
     onNavigateToEdit: () -> Unit,
     onBackClick: () -> Unit,
     onNavigateToMisPedidos: () -> Unit,
+    onNavigateToAdminPanel: () -> Unit,
     badgeCount: Int,
     isLoggedIn: Boolean,
     topBarActions: AppTopBarActions,
@@ -151,21 +152,36 @@ fun ProfileScreen(
                 Spacer(Modifier.height(8.dp))
 
                 when (usuario.tipoUsuario) {
-                    TipoUsuario.superAdmin, TipoUsuario.Administrador, TipoUsuario.Vendedor -> {
+                    TipoUsuario.superAdmin, TipoUsuario.Administrador -> {
                         Button(
-                            onClick = { /* TODO: Navegar al Panel de Admin */ },
+                            onClick = onNavigateToAdminPanel,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Panel Administración")
                         }
+                        Spacer(Modifier.height(8.dp))
+                        InfoRow(
+                            label = "Tipo de Usuario:",
+                            value = usuario.tipoUsuario.toDisplayName()
+                        )
                     }
-                    TipoUsuario.Cliente -> {
-                        InfoRow(label = "Tipo de Usuario:", value = "Cliente")
+                    TipoUsuario.Vendedor, TipoUsuario.Cliente -> {
+                        InfoRow(
+                            label = "Tipo de Usuario:",
+                            value = usuario.tipoUsuario.toDisplayName()
+                        )
                     }
                 }
             }
         }
     }
+}
+
+private fun TipoUsuario.toDisplayName(): String = when (this) {
+    TipoUsuario.superAdmin -> "Superadmin"
+    TipoUsuario.Administrador -> "Administrador"
+    TipoUsuario.Vendedor -> "Vendedor"
+    TipoUsuario.Cliente -> "Cliente"
 }
 
 @Composable

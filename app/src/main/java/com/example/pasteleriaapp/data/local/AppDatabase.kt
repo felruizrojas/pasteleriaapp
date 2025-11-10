@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
         PedidoEntity::class,
         PedidoProductoEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(com.example.pasteleriaapp.data.local.TypeConverters::class)
@@ -96,6 +96,12 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE usuario ADD COLUMN estaBloqueado INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -103,7 +109,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "pasteleriaApp_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .addCallback(AppDatabaseCallback(context))
                     .build()
                 INSTANCE = instance
@@ -344,6 +350,7 @@ abstract class AppDatabase : RoomDatabase() {
                         false,
                         false,
                         true,
+                        false,
                         null
                     ),
 
@@ -362,6 +369,7 @@ abstract class AppDatabase : RoomDatabase() {
                         false,
                         false,
                         true,
+                        false,
                         null
                     ),
 
@@ -380,6 +388,7 @@ abstract class AppDatabase : RoomDatabase() {
                         false,
                         false,
                         true,
+                        false,
                         null
                     ),
 
@@ -396,6 +405,7 @@ abstract class AppDatabase : RoomDatabase() {
                         "Av. San Miguel 876",
                         "123q",
                         true,
+                        false,
                         false,
                         false,
                         null
