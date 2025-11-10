@@ -44,10 +44,12 @@ class UsuarioRepositoryImpl(
         dao.insertarUsuario(usuario.toUsuarioEntity())
     }
 
-    // --- FUNCIÓN NUEVA AÑADIDA ---
     override suspend fun actualizarUsuario(usuario: Usuario) {
-        // Podríamos añadir validaciones aquí si fuera necesario
         dao.actualizarUsuario(usuario.toUsuarioEntity())
     }
 
+    override suspend fun obtenerUsuarioPorCorreo(correo: String): Usuario? {
+        val entity = dao.obtenerUsuarioPorCorreo(correo)
+        return entity?.toUsuario()
+    }
 }

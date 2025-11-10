@@ -9,4 +9,5 @@ data class CarritoUiState(
     val precioTotal: Double = 0.0
 ) {
     val hayItems: Boolean get() = items.isNotEmpty()
+    val totalArticulos: Int get() = items.sumOf { it.cantidad }
 }

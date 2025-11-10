@@ -9,8 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Home // <-- NUEVO ICONO para Home
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -31,11 +30,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.R
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModel
+import com.example.pasteleriaapp.ui.viewmodel.CarritoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     authViewModel: AuthViewModel,
+    carritoViewModel: CarritoViewModel,
     onNavigateToAuth: () -> Unit,
     onNavigateToPerfil: () -> Unit,
     onNavigateToCatalogo: () -> Unit,
@@ -46,6 +47,7 @@ fun HomeScreen(
 ) {
     val state by authViewModel.uiState.collectAsState()
     val usuario = state.usuarioActual
+    val carritoState by carritoViewModel.uiState.collectAsState()
 
     LaunchedEffect(state.logoutSuccess) {
         if (state.logoutSuccess) {
@@ -59,24 +61,35 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text("Pastelería Mil Sabores") },
                 actions = {
-                    // --- Botón de Carrito (siempre visible) ---
+                    // --- Botón de Carrito ---
                     IconButton(onClick = onNavigateToCarrito) {
-                        Icon(Icons.Default.ShoppingCart, "Ver carrito")
+                        BadgedBox(
+                            badge = {
+                                if (carritoState.totalArticulos > 0) {
+                                    Badge {
+                                        Text("${carritoState.totalArticulos}")
+                                    }
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.ShoppingCart, "Ver carrito")
+                        }
                     }
 
                     if (usuario != null) {
-                        // --- Botón de Perfil (si está logueado) ---
+                        // --- Botón de Perfil ---
                         IconButton(onClick = onNavigateToPerfil) {
                             Icon(Icons.Default.Person, "Mi Perfil")
                         }
-                        // --- Botón de Cerrar Sesión (si está logueado) ---
-                        IconButton(onClick = { authViewModel.logout() }) {
-                            Icon(Icons.Default.ExitToApp, "Cerrar Sesión")
+                        // --- Botón de Cerrar Sesión ---
+                        val ctx = LocalContext.current
+                        IconButton(onClick = { authViewModel.logout(ctx) }) {
+                            Icon(Icons.AutoMirrored.Filled.ExitToApp, "Cerrar Sesión")
                         }
                     } else {
-                        // --- Botón de Inicio de Sesión/Registro (si no está logueado) ---
+                        // --- Botón de Inicio de Sesión/Registro ---
                         IconButton(onClick = onNavigateToAuth) {
-                            Icon(Icons.Default.Person, "Iniciar Sesión") // O un icono de 'login' si existe
+                            Icon(Icons.Default.Person, "Iniciar Sesión")
                         }
                     }
                 }
@@ -87,10 +100,10 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState()) // Permite el scroll si hay mucho contenido
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp) // Espacio entre las tarjetas
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = if (usuario != null) "¡Hola, ${usuario.nombre}!" else "¡Bienvenido!",
@@ -101,34 +114,28 @@ fun HomeScreen(
 
             // --- Tarjeta para "Catálogo de Productos" ---
             ActionButtonCard(
-                imageName = "home", // Usamos 'home.jpg' para Catálogo
+                imageName = "home",
                 text = "Catálogo de Productos",
                 onClick = onNavigateToCatalogo
             )
 
             // --- Tarjeta para "Blog de Repostería" ---
             ActionButtonCard(
-                imageName = "blog", // Usamos 'blog.jpg'
+                imageName = "blog",
                 text = "Blog de Repostería",
                 onClick = onNavigateToBlog
             )
 
             // --- Tarjeta para "Nosotros" ---
             ActionButtonCard(
-                imageName = "nosotros", // Usamos 'nosotros.jpg'
+                imageName = "nosotros",
                 text = "Nosotros",
                 onClick = onNavigateToNosotros
             )
-
-            // Ya no se necesita un botón de login aquí porque está en la TopBar
-            // Si quieres un mensaje adicional o un CTA, podrías ponerlo aquí.
         }
     }
 }
 
-/**
- * Composable reutilizable para crear las tarjetas con imagen y texto superpuesto.
- */
 @Composable
 fun ActionButtonCard(
     imageName: String,
@@ -141,13 +148,13 @@ fun ActionButtonCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp) // Altura fija para las tarjetas
+            .height(200.dp)
             .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.medium
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomStart // Alinea el texto a abajo-izquierda
+            contentAlignment = Alignment.BottomStart
         ) {
             Image(
                 painter = painterResource(id = imageResId),
@@ -155,11 +162,10 @@ fun ActionButtonCard(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-            // Degradado para que el texto sea legible
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp) // Altura del degradado
+                    .height(80.dp)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
@@ -179,10 +185,6 @@ fun ActionButtonCard(
     }
 }
 
-
-/**
- * Función auxiliar para obtener un ID de drawable a partir de su nombre (String).
- */
 @DrawableRes
 @Composable
 private fun painterResourceFromName(context: Context, resName: String): Int {

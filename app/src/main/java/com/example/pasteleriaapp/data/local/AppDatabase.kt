@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration // <-- IMPORTANTE
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.pasteleriaapp.data.local.dao.CarritoDao
 import com.example.pasteleriaapp.data.local.dao.CategoriaDao
@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
         PedidoEntity::class,
         PedidoProductoEntity::class
     ],
-    version = 3, // <-- ¡¡VERSIÓN ACTUALIZADA A 2!!
+    version = 5,
     exportSchema = false
 )
 @TypeConverters(com.example.pasteleriaapp.data.local.TypeConverters::class)
@@ -48,32 +48,53 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // --- MIGRACIÓN SEGURA (NO BORRA DATOS) ---
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // 1. Añadir las nuevas columnas (con valor 0 = false)
                 db.execSQL("ALTER TABLE usuario ADD COLUMN tieneDescuentoEdad INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE usuario ADD COLUMN tieneDescuentoCodigo INTEGER NOT NULL DEFAULT 0")
                 db.execSQL("ALTER TABLE usuario ADD COLUMN esEstudianteDuoc INTEGER NOT NULL DEFAULT 0")
-
-                // 2. Actualizar los usuarios de EJEMPLO que ya existían
-
-                // Actualiza a los usuarios de Duoc (ana@duoc.cl, luis@duoc.cl, marcela@profesor.duoc.cl)
                 db.execSQL("UPDATE usuario SET esEstudianteDuoc = 1 WHERE correo LIKE '%@duoc.cl' OR correo LIKE '%@profesor.duoc.cl'")
-
-                // Actualiza a Claudia (nacida en 1950, tiene > 50 años)
                 db.execSQL("UPDATE usuario SET tieneDescuentoEdad = 1 WHERE run = '16789032-6'")
             }
+        }
 
-            // --- NUEVA MIGRACIÓN v2 a v3 ---
-            val MIGRATION_2_3 = object : Migration(2, 3) {
-                override fun migrate(db: SupportSQLiteDatabase) {
-                    // Añade la columna fotoUrl, permitiendo valores NULL
-                    db.execSQL("ALTER TABLE usuario ADD COLUMN fotoUrl TEXT DEFAULT NULL")
-                }
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE usuario ADD COLUMN fotoUrl TEXT DEFAULT NULL")
             }
         }
-        // --- FIN MIGRACIÓN ---
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Paso 1: eliminar duplicados por 'run', manteniendo el idUsuario mínimo
+                db.execSQL(
+                    "DELETE FROM usuario WHERE idUsuario NOT IN (SELECT minId FROM (SELECT MIN(idUsuario) as minId FROM usuario GROUP BY run))"
+                )
+
+                // Paso 2: eliminar duplicados por 'correo', manteniendo el idUsuario mínimo
+                db.execSQL(
+                    "DELETE FROM usuario WHERE idUsuario NOT IN (SELECT minId FROM (SELECT MIN(idUsuario) as minId FROM usuario GROUP BY correo))"
+                )
+
+                // Paso 3: crear índices únicos (ya no deberían fallar si no hay duplicados)
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_usuario_run ON usuario(run)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS idx_usuario_correo ON usuario(correo)")
+            }
+        }
+
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("UPDATE carrito SET mensajePersonalizado = TRIM(IFNULL(mensajePersonalizado, ''))")
+                db.execSQL(
+                    "DELETE FROM carrito WHERE idCarrito NOT IN (" +
+                            "SELECT MIN(idCarrito) FROM carrito GROUP BY idProducto, mensajePersonalizado" +
+                            ")"
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS idx_carrito_producto_mensaje ON carrito(idProducto, mensajePersonalizado)"
+                )
+            }
+        }
 
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -82,7 +103,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "pasteleriaApp_database"
                 )
-                    .addMigrations(MIGRATION_1_2) // <-- AÑADIDO (El método seguro)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .addCallback(AppDatabaseCallback(context))
                     .build()
                 INSTANCE = instance
@@ -94,7 +115,6 @@ abstract class AppDatabase : RoomDatabase() {
             private val context: Context
         ) : RoomDatabase.Callback() {
 
-            // onCreate solo se ejecuta si la BD no existe (primera instalación)
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
                 INSTANCE?.let { database ->
@@ -108,7 +128,6 @@ abstract class AppDatabase : RoomDatabase() {
                 }
             }
 
-            // Esta función (con tus productos) solo se usa para la PRIMERA instalación
             suspend fun populateDatabase(
                 categoriaDao: CategoriaDao,
                 productoDao: ProductoDao,
@@ -117,7 +136,6 @@ abstract class AppDatabase : RoomDatabase() {
                 productoDao.eliminarTodosLosProductos()
                 categoriaDao.eliminarTodasLasCategorias()
 
-                // --- INSERTAR CATEGORÍAS (Tus datos están seguros) ---
                 val categorias = listOf(
                     CategoriaEntity(0, "Tortas Cuadradas", "torta_cuadrada_de_chocolate"),
                     CategoriaEntity(0, "Tortas Circulares", "torta_circular_de_vainilla"),
@@ -130,7 +148,6 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                 categoriaDao.insertarCategorias(categorias)
 
-                // --- INSERTAR PRODUCTOS (Tus datos están seguros) ---
                 val productos = listOf(
                     ProductoEntity(
                         0,
@@ -311,7 +328,6 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                 productoDao.insertarProductos(productos)
 
-                // --- INSERTAR USUARIOS (Tus datos están seguros) ---
                 val usuarios = listOf(
                     UsuarioEntity(
                         0,
@@ -329,7 +345,7 @@ abstract class AppDatabase : RoomDatabase() {
                         false,
                         true,
                         null
-                    ), // fotoUrl = null
+                    ),
 
                     UsuarioEntity(
                         0,

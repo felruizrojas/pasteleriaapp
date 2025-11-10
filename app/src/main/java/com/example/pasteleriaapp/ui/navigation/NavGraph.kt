@@ -64,24 +64,29 @@ fun AppNavGraph(
     pedidoRepository: PedidoRepository,
     modifier: Modifier = Modifier
 ) {
-    // --- ViewModels COMPARTIDOS (NIVEL SUPERIOR) ---
+
     val authFactory = AuthViewModelFactory(usuarioRepository)
     val authViewModel: AuthViewModel = viewModel(factory = authFactory)
+
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        authViewModel.restoreSession(ctx)
+    }
 
     val carritoFactory = CarritoViewModelFactory(carritoRepository)
     val carritoViewModel: CarritoViewModel = viewModel(factory = carritoFactory)
 
     val pedidoFactory = PedidoViewModelFactory(pedidoRepository, carritoRepository)
     val pedidoViewModel: PedidoViewModel = viewModel(factory = pedidoFactory)
-    // --- FIN ViewModels COMPARTIDOS ---
 
     NavHost(
         navController = navController, startDestination = Rutas.HOME, modifier = modifier
     ) {
-        // --- 1. RUTA HOME (CORREGIDA) ---
+        // --- 1. RUTA HOME ---
         composable(Rutas.HOME) {
             HomeScreen(
                 authViewModel = authViewModel,
+                carritoViewModel = carritoViewModel,
                 onNavigateToAuth = { navController.navigate(Rutas.AUTH_FLOW) },
                 onNavigateToPerfil = { navController.navigate(Rutas.PERFIL) },
                 onNavigateToCatalogo = { navController.navigate(Rutas.CATEGORIAS) },
@@ -99,7 +104,7 @@ fun AppNavGraph(
         }
 
         // --- 2. FLUJO DE AUTENTICACIÓN ---
-        authGraph(navController, authViewModel) // <-- Le pasamos el VM compartido
+        authGraph(navController, authViewModel)
 
         // --- 3. RUTA CATEGORIAS ---
         composable(Rutas.CATEGORIAS) {
@@ -193,8 +198,7 @@ fun AppNavGraph(
 
 // --- 7. RUTA NOSOTROS (MODIFICADA) ---
         composable(Rutas.NOSOTROS) {
-            // PlaceholderScreen(texto = "Pantalla 'Nosotros'") // <-- ELIMINADO
-            NosotrosScreen( // <-- AÑADIDO
+            NosotrosScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -301,20 +305,17 @@ fun AppNavGraph(
     }
 }
 
-
-// --- authGraph (CORREGIDO) ---
 private fun NavGraphBuilder.authGraph(
     navController: NavHostController,
-    authViewModel: AuthViewModel // <-- Recibe el VM compartido
+    authViewModel: AuthViewModel
 ) {
     navigation(
         startDestination = Rutas.LOGIN, route = Rutas.AUTH_FLOW
     ) {
-        // --- Pantalla de Login (CORREGIDA) ---
+        // --- Pantalla de Login ---
         composable(Rutas.LOGIN) {
-            // ¡No creamos un VM nuevo! Simplemente usamos el que nos pasaron.
             LoginScreen(
-                viewModel = authViewModel, // <-- Usa el VM compartido
+                viewModel = authViewModel,
                 onLoginSuccess = {
                     navController.navigate(Rutas.HOME) {
                         popUpTo(Rutas.HOME) { inclusive = true }
@@ -326,11 +327,10 @@ private fun NavGraphBuilder.authGraph(
             )
         }
 
-        // --- Pantalla de Registro (CORREGIDA) ---
+        // --- Pantalla de Registro ---
         composable(Rutas.REGISTRO) {
-            // ¡No creamos un VM nuevo! Simplemente usamos el que nos pasaron.
             RegisterScreen(
-                viewModel = authViewModel, // <-- Usa el VM compartido
+                viewModel = authViewModel,
                 onRegisterSuccess = { navController.popBackStack() },
                 onBackClick = { navController.popBackStack() }
             )
@@ -338,10 +338,6 @@ private fun NavGraphBuilder.authGraph(
     }
 }
 
-
-/**
- * Una pantalla genérica temporal para que la navegación funcione.
- */
 @Composable
 private fun PlaceholderScreen(texto: String, modifier: Modifier = Modifier) {
     Box(

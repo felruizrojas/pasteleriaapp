@@ -6,13 +6,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.domain.model.Pedido
+import com.example.pasteleriaapp.domain.model.descripcion
+import com.example.pasteleriaapp.domain.model.displayName
+import com.example.pasteleriaapp.domain.model.progressFraction
 import com.example.pasteleriaapp.ui.viewmodel.AuthViewModel
 import com.example.pasteleriaapp.ui.viewmodel.PedidoViewModel
 import java.text.SimpleDateFormat
@@ -93,7 +106,18 @@ fun PedidoRow(pedido: Pedido, onClick: () -> Unit) {
                 fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(8.dp))
-            InfoRow(label = "Estado:", value = pedido.estado.name)
+            InfoRow(label = "Estado:", value = pedido.estado.displayName())
+            Text(
+                pedido.estado.descripcion(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            LinearProgressIndicator(
+                progress = pedido.estado.progressFraction(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
             InfoRow(label = "Fecha Pedido:", value = dateFormatter.format(Date(pedido.fechaPedido)))
             InfoRow(label = "Entrega:", value = pedido.fechaEntregaPreferida)
             InfoRow(label = "Total:", value = "$${"%.0f".format(pedido.total)}")
@@ -101,7 +125,6 @@ fun PedidoRow(pedido: Pedido, onClick: () -> Unit) {
     }
 }
 
-// (Podríamos mover esto a un archivo 'shared' si lo usamos mucho)
 @Composable
 private fun InfoRow(label: String, value: String) {
     Row {

@@ -14,4 +14,6 @@ interface CarritoRepository {
     suspend fun eliminarItem(item: CarritoItem)
 
     suspend fun limpiarCarrito()
+
+    suspend fun actualizarMensajeItem(idCarrito: Int, nuevoMensaje: String)
 }

@@ -29,28 +29,25 @@ class AuthViewModel(
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    // ... (Todos los eventos on...Change sin cambios) ...
     fun onLoginCorreoChange(valor: String) { _uiState.update { it.copy(loginCorreo = valor) } }
     fun onLoginContrasenaChange(valor: String) { _uiState.update { it.copy(loginContrasena = valor) } }
-    fun onRegRunChange(valor: String) { _uiState.update { it.copy(regRun = valor) } }
-    fun onRegNombreChange(valor: String) { _uiState.update { it.copy(regNombre = valor) } }
-    fun onRegApellidosChange(valor: String) { _uiState.update { it.copy(regApellidos = valor) } }
-    fun onRegCorreoChange(valor: String) { _uiState.update { it.copy(regCorreo = valor) } }
-    fun onRegFechaNacimientoChange(valor: String) { _uiState.update { it.copy(regFechaNacimiento = valor) } }
-    fun onRegRegionChange(valor: String) { _uiState.update { it.copy(regRegion = valor) } }
-    fun onRegComunaChange(valor: String) { _uiState.update { it.copy(regComuna = valor) } }
-    fun onRegDireccionChange(valor: String) { _uiState.update { it.copy(regDireccion = valor) } }
-    fun onRegContrasenaChange(valor: String) { _uiState.update { it.copy(regContrasena = valor) } }
-    fun onRegRepetirContrasenaChange(valor: String) { _uiState.update { it.copy(regRepetirContrasena = valor) } }
-    fun onRegCodigoPromoChange(valor: String) { _uiState.update { it.copy(regCodigoPromo = valor) } }
+    fun onRegRunChange(valor: String) { _uiState.update { it.copy(regRun = valor, regRunError = null) } }
+    fun onRegNombreChange(valor: String) { _uiState.update { it.copy(regNombre = valor, regNombreError = null) } }
+    fun onRegApellidosChange(valor: String) { _uiState.update { it.copy(regApellidos = valor, regApellidosError = null) } }
+    fun onRegCorreoChange(valor: String) { _uiState.update { it.copy(regCorreo = valor, regCorreoError = null) } }
+    fun onRegFechaNacimientoChange(valor: String) { _uiState.update { it.copy(regFechaNacimiento = valor, regFechaNacimientoError = null) } }
+    fun onRegRegionChange(valor: String) { _uiState.update { it.copy(regRegion = valor, regRegionError = null) } }
+    fun onRegComunaChange(valor: String) { _uiState.update { it.copy(regComuna = valor, regComunaError = null) } }
+    fun onRegDireccionChange(valor: String) { _uiState.update { it.copy(regDireccion = valor, regDireccionError = null) } }
+    fun onRegContrasenaChange(valor: String) { _uiState.update { it.copy(regContrasena = valor, regContrasenaError = null) } }
+    fun onRegRepetirContrasenaChange(valor: String) { _uiState.update { it.copy(regRepetirContrasena = valor, regRepetirContrasenaError = null) } }
+    fun onRegCodigoPromoChange(valor: String) { _uiState.update { it.copy(regCodigoPromo = valor, regCodigoPromoError = null) } }
     fun onProfNombreChange(valor: String) { _uiState.update { it.copy(profNombre = valor) } }
     fun onProfApellidosChange(valor: String) { _uiState.update { it.copy(profApellidos = valor) } }
     fun onProfRegionChange(valor: String) { _uiState.update { it.copy(profRegion = valor) } }
     fun onProfComunaChange(valor: String) { _uiState.update { it.copy(profComuna = valor) } }
     fun onProfDireccionChange(valor: String) { _uiState.update { it.copy(profDireccion = valor) } }
 
-
-    // --- FUNCIÓN LOGIN (ACTUALIZADA) ---
     fun login() {
         val state = _uiState.value
         viewModelScope.launch {
@@ -63,7 +60,6 @@ class AuthViewModel(
                             isLoading = false,
                             loginSuccess = true,
                             usuarioActual = usuario,
-                            // Cargamos la foto de perfil al iniciar sesión
                             fotoUri = usuario.fotoUrl?.toUri()
                         )
                     }
@@ -78,49 +74,145 @@ class AuthViewModel(
         }
     }
 
-    // ... (registrarUsuario y calcularEdad sin cambios) ...
+    fun persistSession(context: Context) {
+        val correo = _uiState.value.usuarioActual?.correo ?: return
+        val prefs = context.getSharedPreferences("pasteleria_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("logged_user_correo", correo).apply()
+    }
+
+    fun restoreSession(context: Context) {
+        viewModelScope.launch {
+            try {
+                val prefs = context.getSharedPreferences("pasteleria_prefs", Context.MODE_PRIVATE)
+                val correo = prefs.getString("logged_user_correo", null)
+                if (!correo.isNullOrBlank()) {
+                    val usuario = repository.obtenerUsuarioPorCorreo(correo)
+                    if (usuario != null) {
+                        _uiState.update { it.copy(usuarioActual = usuario, fotoUri = usuario.fotoUrl?.toUri()) }
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     fun registrarUsuario() {
         val state = _uiState.value
-        if (state.regRun.isBlank() || state.regNombre.isBlank() || state.regApellidos.isBlank() ||
-            state.regCorreo.isBlank() || state.regFechaNacimiento.isBlank() || state.regRegion.isBlank() ||
-            state.regComuna.isBlank() || state.regDireccion.isBlank() || state.regContrasena.isBlank()) {
-            _uiState.update { it.copy(error = "Todos los campos son obligatorios.") }
+        var hasError = false
+        val run = state.regRun.trim()
+        val nombre = state.regNombre.trim()
+        val apellidos = state.regApellidos.trim()
+        val correoRaw = state.regCorreo.trim()
+        val fecha = state.regFechaNacimiento.trim()
+        val region = state.regRegion.trim()
+        val comuna = state.regComuna.trim()
+        val direccion = state.regDireccion.trim()
+        val contrasena = state.regContrasena
+        val repetir = state.regRepetirContrasena
+        val codigo = state.regCodigoPromo.trim()
+
+        if (run.isBlank()) { _uiState.update { it.copy(regRunError = "RUN es obligatorio") }; hasError = true }
+        if (nombre.isBlank()) { _uiState.update { it.copy(regNombreError = "Nombre es obligatorio") }; hasError = true }
+        if (apellidos.isBlank()) { _uiState.update { it.copy(regApellidosError = "Apellidos son obligatorios") }; hasError = true }
+        if (correoRaw.isBlank()) { _uiState.update { it.copy(regCorreoError = "Correo es obligatorio") }; hasError = true }
+        if (fecha.isBlank()) { _uiState.update { it.copy(regFechaNacimientoError = "Fecha de nacimiento es obligatoria") }; hasError = true }
+        if (region.isBlank()) { _uiState.update { it.copy(regRegionError = "Región es obligatoria") }; hasError = true }
+        if (comuna.isBlank()) { _uiState.update { it.copy(regComunaError = "Comuna es obligatoria") }; hasError = true }
+        if (direccion.isBlank()) { _uiState.update { it.copy(regDireccionError = "Dirección es obligatoria") }; hasError = true }
+        if (contrasena.isBlank()) { _uiState.update { it.copy(regContrasenaError = "Contraseña es obligatoria") }; hasError = true }
+        if (repetir.isBlank()) { _uiState.update { it.copy(regRepetirContrasenaError = "Repite la contraseña") }; hasError = true }
+        if (hasError) return
+
+        if (!validarRun(run)) {
+            _uiState.update { it.copy(regRunError = "RUN inválido") }
             return
         }
-        if (state.regContrasena != state.regRepetirContrasena) {
-            _uiState.update { it.copy(error = "Las contraseñas no coinciden.") }
+
+        val tieneDigitos = Regex(".*\\d.*")
+        if (tieneDigitos.containsMatchIn(nombre)) { _uiState.update { it.copy(regNombreError = "No se permiten números") }; return }
+        if (tieneDigitos.containsMatchIn(apellidos)) { _uiState.update { it.copy(regApellidosError = "No se permiten números") }; return }
+        if (tieneDigitos.containsMatchIn(region)) { _uiState.update { it.copy(regRegionError = "No se permiten números") }; return }
+        if (tieneDigitos.containsMatchIn(comuna)) { _uiState.update { it.copy(regComunaError = "No se permiten números") }; return }
+
+        if (!correoRaw.contains("@")) {
+            _uiState.update { it.copy(regCorreoError = "Correo inválido") }
             return
         }
-        val edad = calcularEdad(state.regFechaNacimiento.trim())
+        val correo = correoRaw.lowercase()
+
+        val regexContrasena = Regex("^[A-Za-z0-9]+$")
+        if (!regexContrasena.matches(contrasena)) {
+            _uiState.update { it.copy(regContrasenaError = "Contraseña solo letras y números") }
+            return
+        }
+
+        if (contrasena != repetir) {
+            _uiState.update { it.copy(regRepetirContrasenaError = "Las contraseñas no coinciden") }
+            return
+        }
+
+        val edad = calcularEdad(fecha)
         val flagDescuentoEdad = edad > 50
-        val flagDescuentoCodigo = state.regCodigoPromo.trim().equals("FELICES50", ignoreCase = true)
-        val correo = state.regCorreo.trim().lowercase()
+        val flagDescuentoCodigo = codigo.equals("FELICES50", ignoreCase = true)
         val flagEsEstudianteDuoc = correo.endsWith("@duoc.cl") || correo.endsWith("@profesor.duoc.cl")
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val nuevoUsuario = Usuario(
-                    run = state.regRun.trim(),
-                    nombre = state.regNombre.trim(),
-                    apellidos = state.regApellidos.trim(),
+                    run = run,
+                    nombre = nombre,
+                    apellidos = apellidos,
                     correo = correo,
-                    fechaNacimiento = state.regFechaNacimiento.trim(),
-                    region = state.regRegion.trim(),
-                    comuna = state.regComuna.trim(),
-                    direccion = state.regDireccion.trim(),
-                    contrasena = state.regContrasena,
+                    fechaNacimiento = fecha,
+                    region = region,
+                    comuna = comuna,
+                    direccion = direccion,
+                    contrasena = contrasena,
                     tipoUsuario = TipoUsuario.Cliente,
                     tieneDescuentoEdad = flagDescuentoEdad,
                     tieneDescuentoCodigo = flagDescuentoCodigo,
                     esEstudianteDuoc = flagEsEstudianteDuoc,
-                    fotoUrl = null // Foto nula al registrarse
+                    fotoUrl = null
                 )
                 repository.registrarUsuario(nuevoUsuario)
                 _uiState.update { it.copy(isLoading = false, registerSuccess = true) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = e.message) }
+                val msg = e.message ?: "Error al registrar"
+                when {
+                    msg.contains("RUN", ignoreCase = true) -> _uiState.update { it.copy(isLoading = false, regRunError = msg) }
+                    msg.contains("correo", ignoreCase = true) -> _uiState.update { it.copy(isLoading = false, regCorreoError = msg) }
+                    else -> _uiState.update { it.copy(isLoading = false, error = msg) }
+                }
             }
+        }
+    }
+
+    private fun validarRun(rawRun: String): Boolean {
+        try {
+            val run = rawRun.replace(".", "").trim().lowercase()
+            val parts = run.split("-")
+            if (parts.size != 2) return false
+            val body = parts[0]
+            var dv = parts[1]
+            if (body.isEmpty() || dv.isEmpty()) return false
+
+            var suma = 0
+            var multip = 2
+            for (i in body.reversed()) {
+                suma += Character.getNumericValue(i) * multip
+                multip = if (multip == 7) 2 else multip + 1
+            }
+            val resto = 11 - (suma % 11)
+            val dvCalc = when (resto) {
+                11 -> "0"
+                10 -> "k"
+                else -> resto.toString()
+            }
+            if (dv == "K") dv = "k"
+            return dv == dvCalc
+        } catch (e: Exception) {
+            return false
         }
     }
     private fun calcularEdad(fechaNacimiento: String): Int {
@@ -143,31 +235,24 @@ class AuthViewModel(
         }
     }
 
-    // --- FUNCIÓN NUEVA: GUARDAR FOTO ---
-    /**
-     * Guarda el bitmap de la cámara en el almacenamiento interno y actualiza la BD.
-     */
     fun guardarFotoPerfil(bitmap: Bitmap, context: Context) {
         val usuario = _uiState.value.usuarioActual ?: return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                // Guardamos en un hilo de IO (Entrada/Salida)
                 val fotoUrl = withContext(Dispatchers.IO) {
                     saveBitmapToInternalStorage(bitmap, context, "user_${usuario.idUsuario}.jpg")
                 }
 
-                // Actualizamos el usuario en la BD con la nueva URL
                 val usuarioActualizado = usuario.copy(fotoUrl = fotoUrl)
                 repository.actualizarUsuario(usuarioActualizado)
 
-                // Actualizamos el estado de la UI
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         usuarioActual = usuarioActualizado,
-                        fotoUri = fotoUrl?.toUri() // Actualiza la URI en la UI
+                        fotoUri = fotoUrl?.toUri()
                     )
                 }
             } catch (e: Exception) {
@@ -176,9 +261,6 @@ class AuthViewModel(
         }
     }
 
-    /**
-     * Función auxiliar para guardar el bitmap y devolver la ruta (String)
-     */
     @Throws(IOException::class)
     private fun saveBitmapToInternalStorage(bitmap: Bitmap, context: Context, filename: String): String {
         val fileDir = File(context.filesDir, "profile_images")
@@ -195,11 +277,9 @@ class AuthViewModel(
         } finally {
             fos?.close()
         }
-        return file.toUri().toString() // Devuelve la URI como String
+        return file.toUri().toString()
     }
 
-
-    // --- OTRAS FUNCIONES (sin cambios) ---
     fun cargarDatosPerfil() {
         _uiState.value.usuarioActual?.let { usuario ->
             _uiState.update {
@@ -209,20 +289,18 @@ class AuthViewModel(
                     profRegion = usuario.region,
                     profComuna = usuario.comuna,
                     profDireccion = usuario.direccion,
-                    fotoUri = usuario.fotoUrl?.toUri() // Carga la foto existente
+                    fotoUri = usuario.fotoUrl?.toUri()
                 )
             }
         }
     }
 
     fun guardarCambiosPerfil() {
-        // ... (Esta función ahora solo guarda texto, la foto se guarda aparte)
         val state = _uiState.value
         val usuario = state.usuarioActual ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                // Solo actualiza los campos de texto
                 val usuarioActualizado = usuario.copy(
                     nombre = state.profNombre.trim(),
                     apellidos = state.profApellidos.trim(),
@@ -243,9 +321,12 @@ class AuthViewModel(
             }
         }
     }
-
-    fun logout() {
-        _uiState.value = AuthUiState(logoutSuccess = true) // Resetea todo
+    fun logout(context: Context? = null) {
+        context?.let {
+            val prefs = it.getSharedPreferences("pasteleria_prefs", Context.MODE_PRIVATE)
+            prefs.edit().remove("logged_user_correo").apply()
+        }
+        _uiState.value = AuthUiState(logoutSuccess = true)
     }
 
     fun resetNavegacion() {
@@ -261,7 +342,6 @@ class AuthViewModel(
     }
 }
 
-// ... (AuthViewModelFactory sin cambios) ...
 class AuthViewModelFactory(
     private val repository: UsuarioRepository
 ) : ViewModelProvider.Factory {

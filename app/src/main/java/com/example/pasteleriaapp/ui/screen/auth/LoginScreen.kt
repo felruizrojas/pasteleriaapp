@@ -25,10 +25,10 @@ fun LoginScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // ... (LaunchedEffects sin cambios) ...
     LaunchedEffect(state.loginSuccess) {
         if (state.loginSuccess) {
             Toast.makeText(context, "¡Bienvenido/a ${state.usuarioActual?.nombre}!", Toast.LENGTH_SHORT).show()
+            viewModel.persistSession(context)
             viewModel.resetNavegacion()
             onLoginSuccess()
         }
@@ -57,7 +57,6 @@ fun LoginScreen(
                 Text("Ingresa a tu cuenta", style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.height(24.dp))
 
-                // --- CAMPO DE CORREO ACTUALIZADO A VoiceTextField ---
                 VoiceTextField(
                     value = state.loginCorreo,
                     onValueChange = viewModel::onLoginCorreoChange,
@@ -66,7 +65,6 @@ fun LoginScreen(
                 )
                 Spacer(Modifier.height(16.dp))
 
-                // --- CAMPO DE CONTRASEÑA (Sin cambios) ---
                 PasswordTextField(
                     value = state.loginContrasena,
                     onValueChange = viewModel::onLoginContrasenaChange,

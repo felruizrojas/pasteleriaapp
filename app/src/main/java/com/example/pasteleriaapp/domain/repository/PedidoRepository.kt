@@ -7,11 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface PedidoRepository {
 
-    /**
-     * Proceso de "Checkout". Guarda el pedido, sus productos, y limpia el carrito.
-     * Se debe ejecutar en una transacción.
-     */
-    suspend fun crearPedido(pedido: Pedido, items: List<CarritoItem>)
+    suspend fun crearPedido(pedido: Pedido, items: List<CarritoItem>): Long
 
     fun obtenerPedidosPorUsuario(idUsuario: Int): Flow<List<Pedido>>
 

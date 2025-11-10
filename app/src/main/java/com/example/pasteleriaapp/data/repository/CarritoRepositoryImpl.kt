@@ -19,30 +19,25 @@ class CarritoRepositoryImpl(
         }
     }
 
-    /**
-     * Lógica principal: Revisa si el item ya existe.
-     * Si existe, actualiza la cantidad.
-     * Si no existe, crea un nuevo item.
-     */
     override suspend fun agregarAlCarrito(producto: Producto, cantidad: Int, mensaje: String) {
-        val itemExistente = dao.obtenerItemPorProductoId(producto.idProducto)
+        val mensajeNormalizado = mensaje.trim()
+        val mensajeClave = mensajeNormalizado.takeIf { it.isNotBlank() } ?: ""
+        val itemExistente = dao.obtenerItemPorProductoYMensaje(producto.idProducto, mensajeClave)
 
         if (itemExistente != null) {
-            // Producto ya existe, actualizamos cantidad
             val itemActualizado = itemExistente.copy(
                 cantidad = itemExistente.cantidad + cantidad,
-                mensajePersonalizado = if (mensaje.isNotBlank()) mensaje else itemExistente.mensajePersonalizado
+                mensajePersonalizado = mensajeClave
             )
             dao.actualizarItem(itemActualizado)
         } else {
-            // Producto nuevo, lo creamos
             val nuevoItem = CarritoItem(
                 idProducto = producto.idProducto,
                 nombreProducto = producto.nombreProducto,
                 precioProducto = producto.precioProducto,
                 imagenProducto = producto.imagenProducto,
                 cantidad = cantidad,
-                mensajePersonalizado = mensaje
+                mensajePersonalizado = mensajeClave
             ).toCarritoItemEntity()
             dao.insertarItem(nuevoItem)
         }
@@ -63,5 +58,21 @@ class CarritoRepositoryImpl(
 
     override suspend fun limpiarCarrito() {
         dao.limpiarCarrito()
+    }
+
+    override suspend fun actualizarMensajeItem(idCarrito: Int, nuevoMensaje: String) {
+        val mensajeNormalizado = nuevoMensaje.trim()
+        val mensajeClave = mensajeNormalizado.takeIf { it.isNotBlank() } ?: ""
+        val item = dao.obtenerItemPorId(idCarrito) ?: return
+        if (item.mensajePersonalizado == mensajeClave) return
+
+        val potencialDuplicado = dao.obtenerItemPorProductoYMensaje(item.idProducto, mensajeClave)
+        if (potencialDuplicado != null && potencialDuplicado.idCarrito != item.idCarrito) {
+            val actualizado = potencialDuplicado.copy(cantidad = potencialDuplicado.cantidad + item.cantidad)
+            dao.actualizarItem(actualizado)
+            dao.eliminarItem(item)
+        } else {
+            dao.actualizarMensajeItem(idCarrito, mensajeClave)
+        }
     }
 }

@@ -30,7 +30,6 @@ class CarritoViewModel(
             _uiState.update { it.copy(estaCargando = true) }
 
             repository.obtenerItemsCarrito()
-                // Usamos 'map' para transformar la lista de items y calcular el total
                 .map { items ->
                     val total = items.sumOf { it.precioProducto * it.cantidad }
                     CarritoUiState(estaCargando = false, items = items, precioTotal = total)
@@ -39,7 +38,7 @@ class CarritoViewModel(
                     _uiState.value = CarritoUiState(estaCargando = false, error = e.message)
                 }
                 .collect { state ->
-                    _uiState.value = state // Actualiza el UI State con el nuevo estado
+                    _uiState.value = state
                 }
         }
     }
@@ -61,9 +60,14 @@ class CarritoViewModel(
             repository.limpiarCarrito()
         }
     }
+
+    fun actualizarMensaje(item: CarritoItem, nuevoMensaje: String) {
+        viewModelScope.launch {
+            repository.actualizarMensajeItem(item.idCarrito, nuevoMensaje)
+        }
+    }
 }
 
-// Factory para el CarritoViewModel
 class CarritoViewModelFactory(
     private val repository: CarritoRepository
 ) : ViewModelProvider.Factory {

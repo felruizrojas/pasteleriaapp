@@ -14,8 +14,11 @@ interface CarritoDao {
     @Query("SELECT * FROM carrito")
     fun obtenerItemsCarrito(): Flow<List<CarritoItemEntity>>
 
-    @Query("SELECT * FROM carrito WHERE idProducto = :idProducto LIMIT 1")
-    suspend fun obtenerItemPorProductoId(idProducto: Int): CarritoItemEntity?
+    @Query("SELECT * FROM carrito WHERE idProducto = :idProducto AND mensajePersonalizado = :mensaje LIMIT 1")
+    suspend fun obtenerItemPorProductoYMensaje(idProducto: Int, mensaje: String): CarritoItemEntity?
+
+    @Query("SELECT * FROM carrito WHERE idCarrito = :idCarrito LIMIT 1")
+    suspend fun obtenerItemPorId(idCarrito: Int): CarritoItemEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarItem(item: CarritoItemEntity)
@@ -25,6 +28,9 @@ interface CarritoDao {
 
     @Delete
     suspend fun eliminarItem(item: CarritoItemEntity)
+
+    @Query("UPDATE carrito SET mensajePersonalizado = :mensaje WHERE idCarrito = :idCarrito")
+    suspend fun actualizarMensajeItem(idCarrito: Int, mensaje: String)
 
     @Query("DELETE FROM carrito")
     suspend fun limpiarCarrito()

@@ -2,11 +2,18 @@ package com.example.pasteleriaapp.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.example.pasteleriaapp.domain.model.TipoUsuario
 import com.example.pasteleriaapp.domain.model.Usuario
 
-@Entity(tableName = "usuario")
+@Entity(
+    tableName = "usuario",
+    indices = [
+        Index(value = ["run"], unique = true),
+        Index(value = ["correo"], unique = true)
+    ]
+)
 data class UsuarioEntity(
     @PrimaryKey(autoGenerate = true)
     val idUsuario: Int = 0,
@@ -29,10 +36,10 @@ data class UsuarioEntity(
     val esEstudianteDuoc: Boolean = false,
 
     @ColumnInfo(defaultValue = "NULL")
-    val fotoUrl: String? = null // <-- CAMPO NUEVO AÑADIDO
+    val fotoUrl: String? = null
 )
 
-// --- MAPPERS ACTUALIZADOS ---
+// MAPPERS
 
 fun UsuarioEntity.toUsuario() = Usuario(
     idUsuario = idUsuario,
@@ -49,7 +56,7 @@ fun UsuarioEntity.toUsuario() = Usuario(
     tieneDescuentoEdad = tieneDescuentoEdad,
     tieneDescuentoCodigo = tieneDescuentoCodigo,
     esEstudianteDuoc = esEstudianteDuoc,
-    fotoUrl = fotoUrl // <-- AÑADIDO
+    fotoUrl = fotoUrl
 )
 
 fun Usuario.toUsuarioEntity() = UsuarioEntity(
@@ -67,5 +74,5 @@ fun Usuario.toUsuarioEntity() = UsuarioEntity(
     tieneDescuentoEdad = tieneDescuentoEdad,
     tieneDescuentoCodigo = tieneDescuentoCodigo,
     esEstudianteDuoc = esEstudianteDuoc,
-    fotoUrl = fotoUrl // <-- AÑADIDO
+    fotoUrl = fotoUrl
 )

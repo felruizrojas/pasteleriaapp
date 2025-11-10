@@ -19,20 +19,19 @@ class PedidoRepositoryImpl(
     private val db: AppDatabase // Pedimos la BD completa para la transacción
 ) : PedidoRepository {
 
-    // Obtenemos los DAOs desde la BD
     private val pedidoDao = db.pedidoDao()
     private val carritoDao = db.carritoDao()
 
-    override suspend fun crearPedido(pedido: Pedido, items: List<CarritoItem>) {
-        // ¡TRANSACCIÓN! Si algo falla, todo se revierte.
-        db.withTransaction {
-            // 1. Insertar el pedido y obtener su nuevo ID
-            val idPedido = pedidoDao.insertarPedido(pedido.toPedidoEntity()).toInt()
+    override suspend fun crearPedido(pedido: Pedido, items: List<CarritoItem>): Long {
+        return db.withTransaction {
+            // 1. Insertar el pedido y obtener su nuevo ID (Long)
+            val idPedidoLong = pedidoDao.insertarPedido(pedido.toPedidoEntity())
 
-            // 2. Mapear los items del carrito a items de pedido
+            // 2. Mapear los items del carrito a items de pedido (idPedido necesita ser Int en la entidad)
+            val idPedidoInt = idPedidoLong.toInt()
             val pedidoProductos = items.map { item ->
                 PedidoProductoEntity(
-                    idPedido = idPedido, // <-- Usamos el nuevo ID
+                    idPedido = idPedidoInt,
                     idProducto = item.idProducto,
                     nombreProducto = item.nombreProducto,
                     precioProducto = item.precioProducto,
@@ -47,6 +46,9 @@ class PedidoRepositoryImpl(
 
             // 4. Limpiar el carrito
             carritoDao.limpiarCarrito()
+
+            // 5. Devolver el ID generado
+            idPedidoLong
         }
     }
 

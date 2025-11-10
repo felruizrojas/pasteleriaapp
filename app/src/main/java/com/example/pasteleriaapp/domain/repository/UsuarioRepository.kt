@@ -7,4 +7,5 @@ interface UsuarioRepository {
     suspend fun registrarUsuario(usuario: Usuario)
 
     suspend fun actualizarUsuario(usuario: Usuario)
+    suspend fun obtenerUsuarioPorCorreo(correo: String): Usuario?
 }

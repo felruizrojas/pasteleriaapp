@@ -3,6 +3,7 @@ package com.example.pasteleriaapp.ui.screen.auth
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -10,6 +11,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import android.app.DatePickerDialog
+import java.util.Calendar
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
@@ -27,7 +30,6 @@ fun RegisterScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // ... (LaunchedEffects sin cambios) ...
     LaunchedEffect(state.registerSuccess) {
         if (state.registerSuccess) {
             Toast.makeText(context, "Registro exitoso. Inicia sesión.", Toast.LENGTH_LONG).show()
@@ -38,7 +40,7 @@ fun RegisterScreen(
     LaunchedEffect(state.error) {
         state.error?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
-            viewModel.resetNavegacion() // Limpia el error
+            viewModel.resetNavegacion()
         }
     }
 
@@ -62,13 +64,15 @@ fun RegisterScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // --- CAMPOS DE TEXTO ACTUALIZADOS A VoiceTextField ---
                 VoiceTextField(
                     value = state.regRun,
                     onValueChange = viewModel::onRegRunChange,
                     label = "RUN (ej: 12345678-9)",
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (state.regRunError != null) {
+                    Text(text = state.regRunError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(8.dp))
 
                 VoiceTextField(
@@ -77,6 +81,9 @@ fun RegisterScreen(
                     label = "Nombre",
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (state.regNombreError != null) {
+                    Text(text = state.regNombreError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(8.dp))
 
                 VoiceTextField(
@@ -85,6 +92,9 @@ fun RegisterScreen(
                     label = "Apellidos",
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (state.regApellidosError != null) {
+                    Text(text = state.regApellidosError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(8.dp))
 
                 VoiceTextField(
@@ -93,15 +103,48 @@ fun RegisterScreen(
                     label = "Correo Electrónico",
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (state.regCorreoError != null) {
+                    Text(text = state.regCorreoError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(8.dp))
 
-                VoiceTextField(
+                var showDatePicker by remember { mutableStateOf(false) }
+                OutlinedTextField(
                     value = state.regFechaNacimiento,
-                    onValueChange = viewModel::onRegFechaNacimientoChange,
-                    label = "Fecha Nacimiento (DD-MM-AAAA)",
-                    modifier = Modifier.fillMaxWidth()
+                    onValueChange = {},
+                    label = { Text("Fecha Nacimiento (DD-MM-AAAA)") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showDatePicker = true },
+                    readOnly = true,
+                    isError = state.regFechaNacimientoError != null,
+                    singleLine = true
                 )
+                if (state.regFechaNacimientoError != null) {
+                    Text(
+                        text = state.regFechaNacimientoError ?: "",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp)
+                    )
+                }
                 Spacer(Modifier.height(8.dp))
+
+                if (showDatePicker) {
+                    val hoy = Calendar.getInstance()
+                    DatePickerDialog(
+                        LocalContext.current,
+                        { _, ano, mes, dia ->
+                            // mes viene 0-based
+                            val formatted = String.format("%02d-%02d-%04d", dia, mes + 1, ano)
+                            viewModel.onRegFechaNacimientoChange(formatted)
+                            showDatePicker = false
+                        },
+                        hoy.get(Calendar.YEAR),
+                        hoy.get(Calendar.MONTH),
+                        hoy.get(Calendar.DAY_OF_MONTH)
+                    ).show()
+                }
 
                 VoiceTextField(
                     value = state.regRegion,
@@ -109,6 +152,9 @@ fun RegisterScreen(
                     label = "Región",
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (state.regRegionError != null) {
+                    Text(text = state.regRegionError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(8.dp))
 
                 VoiceTextField(
@@ -117,6 +163,9 @@ fun RegisterScreen(
                     label = "Comuna",
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (state.regComunaError != null) {
+                    Text(text = state.regComunaError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(8.dp))
 
                 VoiceTextField(
@@ -125,15 +174,20 @@ fun RegisterScreen(
                     label = "Dirección",
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (state.regDireccionError != null) {
+                    Text(text = state.regDireccionError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(16.dp))
 
-                // --- CAMPOS DE CONTRASEÑA (Sin cambios) ---
                 PasswordTextField(
                     value = state.regContrasena,
                     onValueChange = viewModel::onRegContrasenaChange,
                     label = "Contraseña",
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (state.regContrasenaError != null) {
+                    Text(text = state.regContrasenaError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(8.dp))
 
                 PasswordTextField(
@@ -141,17 +195,22 @@ fun RegisterScreen(
                     onValueChange = viewModel::onRegRepetirContrasenaChange,
                     label = "Repetir Contraseña",
                     modifier = Modifier.fillMaxWidth(),
-                    isError = state.regContrasena != state.regRepetirContrasena
+                    isError = state.regRepetirContrasenaError != null
                 )
+                if (state.regRepetirContrasenaError != null) {
+                    Text(text = state.regRepetirContrasenaError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(16.dp))
 
-                // --- CAMPO DE CÓDIGO (Actualizado) ---
                 VoiceTextField(
                     value = state.regCodigoPromo,
                     onValueChange = viewModel::onRegCodigoPromoChange,
                     label = "Código Promocional (Opcional)",
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (state.regCodigoPromoError != null) {
+                    Text(text = state.regCodigoPromoError ?: "", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth().padding(start = 8.dp, top = 4.dp))
+                }
                 Spacer(Modifier.height(24.dp))
 
                 Button(

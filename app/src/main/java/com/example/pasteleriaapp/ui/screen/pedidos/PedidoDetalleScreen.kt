@@ -8,8 +8,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,10 +33,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.R
+import com.example.pasteleriaapp.domain.model.EstadoPedido
 import com.example.pasteleriaapp.domain.model.Pedido
 import com.example.pasteleriaapp.domain.model.PedidoProducto
+import com.example.pasteleriaapp.domain.model.descripcion
+import com.example.pasteleriaapp.domain.model.displayName
+import com.example.pasteleriaapp.domain.model.progressFraction
+import com.example.pasteleriaapp.domain.model.progressStep
+import com.example.pasteleriaapp.domain.model.trackingEstados
 import com.example.pasteleriaapp.ui.viewmodel.PedidoViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -71,6 +94,10 @@ fun PedidoDetalleScreen(
                             DetallesPedidoHeader(pedido)
                         }
 
+                        item {
+                            EstadoPedidoTimeline(pedido.estado)
+                        }
+
                         // --- Sección 2: Productos ---
                         item {
                             Text(
@@ -97,7 +124,13 @@ private fun DetallesPedidoHeader(pedido: Pedido) {
     Column {
         Text("Resumen del Pedido", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
-        InfoRow(label = "Estado:", value = pedido.estado.name)
+        InfoRow(label = "Estado:", value = pedido.estado.displayName())
+        Text(
+            pedido.estado.descripcion(),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
         InfoRow(label = "Fecha Pedido:", value = dateFormatter.format(Date(pedido.fechaPedido)))
         InfoRow(label = "Fecha Entrega:", value = pedido.fechaEntregaPreferida)
         InfoRow(label = "Total Pagado:", value = "$${"%.0f".format(pedido.total)}")
@@ -149,7 +182,63 @@ private fun ProductoPedidoRow(producto: PedidoProducto) {
     }
 }
 
-// --- Funciones auxiliares (duplicadas de otras pantallas) ---
+@Composable
+private fun EstadoPedidoTimeline(estado: EstadoPedido) {
+    val estados = trackingEstados()
+    if (estado == EstadoPedido.CANCELADO) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Cancel,
+                contentDescription = "Pedido cancelado",
+                tint = MaterialTheme.colorScheme.error
+            )
+            Text(
+                "El pedido fue cancelado",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+        return
+    }
+
+    val pasoActual = estado.progressStep()
+    LinearProgressIndicator(
+        progress = estado.progressFraction(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        estados.forEachIndexed { index, estadoIterado ->
+            val alcanzado = index <= pasoActual
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                val icono = if (alcanzado) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked
+                val color = if (alcanzado) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outline
+                }
+                Icon(imageVector = icono, contentDescription = estadoIterado.displayName(), tint = color)
+                Text(
+                    estadoIterado.displayName(),
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun InfoRow(label: String, value: String) {
     Row(modifier = Modifier.padding(bottom = 4.dp)) {

@@ -4,9 +4,6 @@ import com.example.pasteleriaapp.domain.model.TipoUsuario
 import com.example.pasteleriaapp.domain.model.Usuario
 import android.net.Uri
 
-/**
- * Estado que unifica la lógica de Login y Registro.
- */
 data class AuthUiState(
     // Estado general
     val isLoading: Boolean = false,
@@ -33,9 +30,21 @@ data class AuthUiState(
     val regDireccion: String = "",
     val regContrasena: String = "",
     val regRepetirContrasena: String = "",
-    val regCodigoPromo: String = "", // <-- ¡¡ESTA ES LA LÍNEA QUE FALTA!!
+    val regCodigoPromo: String = "",
 
-    // --- CAMPOS NUEVOS PARA EDITAR PERFIL ---
+    // mostrar mensajes de error
+    val regRunError: String? = null,
+    val regNombreError: String? = null,
+    val regApellidosError: String? = null,
+    val regCorreoError: String? = null,
+    val regFechaNacimientoError: String? = null,
+    val regRegionError: String? = null,
+    val regComunaError: String? = null,
+    val regDireccionError: String? = null,
+    val regContrasenaError: String? = null,
+    val regRepetirContrasenaError: String? = null,
+    val regCodigoPromoError: String? = null,
+
     val profNombre: String = "",
     val profApellidos: String = "",
     val profRegion: String = "",
