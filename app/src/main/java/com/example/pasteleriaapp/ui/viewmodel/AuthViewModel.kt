@@ -12,9 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class AuthViewModel(
-    private val repository: UsuarioRepository
+    val repository: UsuarioRepository // <-- 'val' es correcto para el NavGraph
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -24,7 +25,7 @@ class AuthViewModel(
     fun onLoginCorreoChange(valor: String) { _uiState.update { it.copy(loginCorreo = valor) } }
     fun onLoginContrasenaChange(valor: String) { _uiState.update { it.copy(loginContrasena = valor) } }
 
-    // --- Eventos de Registro ---
+    // --- Eventos de Registro (con 1 añadido) ---
     fun onRegRunChange(valor: String) { _uiState.update { it.copy(regRun = valor) } }
     fun onRegNombreChange(valor: String) { _uiState.update { it.copy(regNombre = valor) } }
     fun onRegApellidosChange(valor: String) { _uiState.update { it.copy(regApellidos = valor) } }
@@ -35,6 +36,8 @@ class AuthViewModel(
     fun onRegDireccionChange(valor: String) { _uiState.update { it.copy(regDireccion = valor) } }
     fun onRegContrasenaChange(valor: String) { _uiState.update { it.copy(regContrasena = valor) } }
     fun onRegRepetirContrasenaChange(valor: String) { _uiState.update { it.copy(regRepetirContrasena = valor) } }
+    // --- CAMPO NUEVO ---
+    fun onRegCodigoPromoChange(valor: String) { _uiState.update { it.copy(regCodigoPromo = valor) } }
 
     // --- NUEVOS Eventos de Edición de Perfil ---
     fun onProfNombreChange(valor: String) { _uiState.update { it.copy(profNombre = valor) } }
@@ -70,6 +73,7 @@ class AuthViewModel(
         }
     }
 
+    // --- FUNCIÓN REGISTRAR USUARIO (ACTUALIZADA CON LÓGICA) ---
     fun registrarUsuario() {
         val state = _uiState.value
 
@@ -84,7 +88,21 @@ class AuthViewModel(
             _uiState.update { it.copy(error = "Las contraseñas no coinciden.") }
             return
         }
-        // (Aquí podrías añadir más validaciones: formato de RUN, formato de correo, etc.)
+
+        // --- INICIO DE LÓGICA DE REGLAS ---
+
+        // Regla 1: Descuento por Edad (> 50)
+        val edad = calcularEdad(state.regFechaNacimiento.trim())
+        val flagDescuentoEdad = edad > 50
+
+        // Regla 2: Descuento por Código (FELICES50)
+        val flagDescuentoCodigo = state.regCodigoPromo.trim().equals("FELICES50", ignoreCase = true)
+
+        // Regla 3: Torta Gratis (correo institucional @duoc.cl)
+        val correo = state.regCorreo.trim().lowercase()
+        val flagEsEstudianteDuoc = correo.endsWith("@duoc.cl") || correo.endsWith("@profesor.duoc.cl")
+
+        // --- FIN LÓGICA ---
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -93,13 +111,18 @@ class AuthViewModel(
                     run = state.regRun.trim(),
                     nombre = state.regNombre.trim(),
                     apellidos = state.regApellidos.trim(),
-                    correo = state.regCorreo.trim().lowercase(),
+                    correo = correo, // Correo en minúsculas
                     fechaNacimiento = state.regFechaNacimiento.trim(),
                     region = state.regRegion.trim(),
                     comuna = state.regComuna.trim(),
                     direccion = state.regDireccion.trim(),
                     contrasena = state.regContrasena,
-                    tipoUsuario = TipoUsuario.Cliente // Por defecto, todos se registran como Clientes
+                    tipoUsuario = TipoUsuario.Cliente, // Por defecto, todos se registran como Clientes
+
+                    // --- Guardamos los resultados de la lógica ---
+                    tieneDescuentoEdad = flagDescuentoEdad,
+                    tieneDescuentoCodigo = flagDescuentoCodigo,
+                    esEstudianteDuoc = flagEsEstudianteDuoc
                 )
                 repository.registrarUsuario(nuevoUsuario)
                 _uiState.update { it.copy(isLoading = false, registerSuccess = true) }
@@ -109,6 +132,33 @@ class AuthViewModel(
         }
     }
 
+    /**
+     * --- FUNCIÓN AUXILIAR AÑADIDA ---
+     * Calcula la edad a partir de un string "DD-MM-AAAA"
+     */
+    private fun calcularEdad(fechaNacimiento: String): Int {
+        try {
+            val partes = fechaNacimiento.split("-")
+            if (partes.size != 3) return 0
+
+            val dia = partes[0].toInt()
+            val mes = partes[1].toInt() // 1-12
+            val ano = partes[2].toInt()
+
+            val hoy = Calendar.getInstance()
+            val nacimiento = Calendar.getInstance()
+            nacimiento.set(ano, mes - 1, dia) // Mes en Calendar es 0-11
+
+            var edad = hoy.get(Calendar.YEAR) - nacimiento.get(Calendar.YEAR)
+            if (hoy.get(Calendar.DAY_OF_YEAR) < nacimiento.get(Calendar.DAY_OF_YEAR)) {
+                edad--
+            }
+            return edad
+        } catch (e: Exception) {
+            // Error de formato o fecha inválida
+            return 0
+        }
+    }
 
 
     // --- FUNCIÓN NUEVA: Cargar datos en el formulario de edición ---
@@ -135,6 +185,7 @@ class AuthViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 // Creamos el usuario actualizado
+                // Nota: Los flags de descuento NO se pueden editar aquí
                 val usuarioActualizado = usuario.copy(
                     nombre = state.profNombre.trim(),
                     apellidos = state.profApellidos.trim(),
@@ -175,12 +226,6 @@ class AuthViewModel(
         }
     }
 }
-
-
-
-
-
-
 
 // Factory para el AuthViewModel
 class AuthViewModelFactory(

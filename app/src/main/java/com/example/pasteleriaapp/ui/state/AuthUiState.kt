@@ -13,8 +13,8 @@ data class AuthUiState(
     val loginSuccess: Boolean = false,
     val registerSuccess: Boolean = false,
     val usuarioActual: Usuario? = null,
-    val logoutSuccess: Boolean = false,    // <-- AÑADIDO
-    val updateSuccess: Boolean = false,    // <-- AÑADIDO
+    val logoutSuccess: Boolean = false,
+    val updateSuccess: Boolean = false,
 
     // --- Campos de Login ---
     val loginCorreo: String = "",
@@ -31,11 +31,12 @@ data class AuthUiState(
     val regDireccion: String = "",
     val regContrasena: String = "",
     val regRepetirContrasena: String = "",
+    val regCodigoPromo: String = "", // <-- ¡¡ESTA ES LA LÍNEA QUE FALTA!!
 
+    // --- CAMPOS NUEVOS PARA EDITAR PERFIL ---
     val profNombre: String = "",
     val profApellidos: String = "",
     val profRegion: String = "",
     val profComuna: String = "",
     val profDireccion: String = ""
-
 )

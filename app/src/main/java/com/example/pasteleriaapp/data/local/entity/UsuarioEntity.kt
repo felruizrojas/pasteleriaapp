@@ -1,5 +1,6 @@
 package com.example.pasteleriaapp.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.pasteleriaapp.domain.model.TipoUsuario
@@ -18,7 +19,18 @@ data class UsuarioEntity(
     val region: String,
     val comuna: String,
     val direccion: String,
-    val contrasena: String
+    val contrasena: String,
+
+// --- CAMPOS NUEVOS AÑADIDOS ---
+    // (Valor por defecto 0 = false)
+    @ColumnInfo(defaultValue = "0")
+    val tieneDescuentoEdad: Boolean = false,
+
+    @ColumnInfo(defaultValue = "0")
+    val tieneDescuentoCodigo: Boolean = false,
+
+    @ColumnInfo(defaultValue = "0")
+    val esEstudianteDuoc: Boolean = false
 )
 
 fun UsuarioEntity.toUsuario() = Usuario(
@@ -32,7 +44,11 @@ fun UsuarioEntity.toUsuario() = Usuario(
     region = region,
     comuna = comuna,
     direccion = direccion,
-    contrasena = contrasena
+    contrasena = contrasena,
+
+    tieneDescuentoEdad = tieneDescuentoEdad,
+    tieneDescuentoCodigo = tieneDescuentoCodigo,
+    esEstudianteDuoc = esEstudianteDuoc
 )
 
 fun Usuario.toUsuarioEntity() = UsuarioEntity(
@@ -46,5 +62,9 @@ fun Usuario.toUsuarioEntity() = UsuarioEntity(
     region = region,
     comuna = comuna,
     direccion = direccion,
-    contrasena = contrasena
+    contrasena = contrasena,
+
+    tieneDescuentoEdad = tieneDescuentoEdad,
+    tieneDescuentoCodigo = tieneDescuentoCodigo,
+    esEstudianteDuoc = esEstudianteDuoc
 )
