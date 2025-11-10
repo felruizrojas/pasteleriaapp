@@ -10,57 +10,76 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * Gestiona el estado y la lógica de la pantalla de categorías.
- */
 class CategoriaViewModel(
-    private val repositorio: CategoriaRepository
+    private val repository: CategoriaRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CategoriaUiState())
     val uiState: StateFlow<CategoriaUiState> = _uiState.asStateFlow()
 
+    // --- NUEVO: Lista interna para guardar todas las categorías ---
+    private var listaCompletaCategorias: List<Categoria> = emptyList()
+
     init {
         cargarCategorias()
     }
 
-    fun cargarCategorias() {
+    private fun cargarCategorias() {
         viewModelScope.launch {
-            _uiState.value = CategoriaUiState(estaCargando = true)
+            _uiState.update { it.copy(estaCargando = true) }
 
-            repositorio.obtenerCategorias()
+            repository.obtenerCategorias()
                 .catch { e ->
-                    _uiState.value = _uiState.value.copy(
-                        estaCargando = false,
-                        error = e.message
-                    )
+                    _uiState.update { it.copy(estaCargando = false, error = e.message) }
                 }
                 .collect { categorias ->
-                    _uiState.value = _uiState.value.copy(
-                        estaCargando = false,
-                        categorias = categorias,
-                        error = null
-                    )
+                    // Guardamos la lista completa internamente
+                    listaCompletaCategorias = categorias
+
+                    // Actualizamos la UI (inicialmente sin filtro)
+                    _uiState.update {
+                        it.copy(
+                            estaCargando = false,
+                            categorias = categorias, // La lista filtrada es igual a la completa
+                            error = null
+                        )
+                    }
                 }
         }
     }
 
-    // Aquí puedes agregar funciones como agregarCategoria, etc.
+    // --- FUNCIÓN NUEVA: Se llama cada vez que el usuario escribe ---
+    fun onSearchQueryChange(query: String) {
+        // 1. Actualiza el texto en la UI
+        _uiState.update { it.copy(searchQuery = query) }
+
+        // 2. Filtra la lista
+        val listaFiltrada = if (query.isBlank()) {
+            listaCompletaCategorias // Si no hay búsqueda, muestra todo
+        } else {
+            // Filtra por nombre de categoría
+            listaCompletaCategorias.filter { categoria ->
+                categoria.nombreCategoria.contains(query, ignoreCase = true)
+            }
+        }
+
+        // 3. Actualiza la lista de categorías que ve el usuario
+        _uiState.update { it.copy(categorias = listaFiltrada) }
+    }
 }
 
-/**
- * Factory para crear el CategoriaViewModel con su repositorio.
- */
+// ... (CategoriaViewModelFactory no necesita cambios) ...
 class CategoriaViewModelFactory(
-    private val repositorio: CategoriaRepository
+    private val repository: CategoriaRepository
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CategoriaViewModel::class.java)) {
-            return CategoriaViewModel(repositorio) as T
+            return CategoriaViewModel(repository) as T
         }
         throw IllegalArgumentException("Clase ViewModel desconocida")
     }

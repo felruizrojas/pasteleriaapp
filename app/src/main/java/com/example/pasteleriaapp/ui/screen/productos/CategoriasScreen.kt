@@ -15,10 +15,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+// --- NUEVOS IMPORTS ---
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.OutlinedTextField
+// --- FIN NUEVOS IMPORTS ---
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,32 +46,51 @@ import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.domain.model.Categoria
 import com.example.pasteleriaapp.ui.viewmodel.CategoriaViewModel
 import com.example.pasteleriaapp.R
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 
-/**
- * Pantalla que muestra la lista de categorías.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoriasScreen(
     viewModel: CategoriaViewModel,
-    onCategoriaClick: (Int) -> Unit, // Lambda para navegar
+    onCategoriaClick: (Int) -> Unit,
     onCarritoClick: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Catálogo de Productos") },
-                actions = {
-                    IconButton(onClick = onCarritoClick) {
-                        Icon(Icons.Default.ShoppingCart, "Ver carrito")
+            // --- MODIFICADO: TopAppBar ahora es una Columna ---
+            Column {
+                TopAppBar(
+                    title = { Text("Catálogo de Productos") },
+                    actions = {
+                        IconButton(onClick = onCarritoClick) {
+                            Icon(Icons.Default.ShoppingCart, "Ver carrito")
+                        }
                     }
-                }
-            )
+                )
+
+                // --- BARRA DE BÚSQUEDA AÑADIDA ---
+                OutlinedTextField(
+                    value = state.searchQuery,
+                    onValueChange = { viewModel.onSearchQueryChange(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = { Text("Buscar categoría... (ej. Tortas)") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, "Buscar")
+                    },
+                    trailingIcon = {
+                        // Icono para limpiar la búsqueda
+                        if (state.searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                Icon(Icons.Default.Close, "Limpiar")
+                            }
+                        }
+                    },
+                    singleLine = true
+                )
+            }
         }
     ) { paddingValues ->
         Box(
@@ -78,13 +106,21 @@ fun CategoriasScreen(
                 state.error != null -> {
                     Text(text = "Error: ${state.error}")
                 }
+
+                // Caso 1: Hay categorías (la lista filtrada no está vacía)
                 state.hayCategorias -> {
-                    // --- MODIFICADO: Usamos una Grilla ---
                     CategoriasGrid(
-                        categorias = state.categorias,
+                        categorias = state.categorias, // Muestra la lista filtrada
                         onCategoriaClick = onCategoriaClick
                     )
                 }
+
+                // Caso 2: No hay categorías POR EL FILTRO
+                !state.hayCategorias && state.searchQuery.isNotEmpty() -> {
+                    Text(text = "No se encontraron resultados para \"${state.searchQuery}\"")
+                }
+
+                // Caso 3: No hay categorías EN LA BD
                 else -> {
                     Text(text = "No hay categorías disponibles.")
                 }
@@ -95,6 +131,7 @@ fun CategoriasScreen(
 
 /**
  * Muestra la grilla de categorías.
+ * (Sin cambios)
  */
 @Composable
 private fun CategoriasGrid(
@@ -102,7 +139,7 @@ private fun CategoriasGrid(
     onCategoriaClick: (Int) -> Unit
 ) {
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2), // Grilla de 2 columnas
+        columns = GridCells.Fixed(2),
         contentPadding = PaddingValues(12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -119,6 +156,7 @@ private fun CategoriasGrid(
 
 /**
  * Representa una sola Card de categoría.
+ * (Sin cambios)
  */
 @Composable
 private fun CategoriaCard(
@@ -126,7 +164,6 @@ private fun CategoriaCard(
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
-    // Obtenemos el ID del drawable usando el nombre de la imagen
     val imageResId = painterResourceFromName(context, categoria.imagenCategoria)
 
     Card(
@@ -141,7 +178,7 @@ private fun CategoriaCard(
                 contentDescription = "Imagen de ${categoria.nombreCategoria}",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f), // Imagen cuadrada
+                    .aspectRatio(1f),
                 contentScale = ContentScale.Crop
             )
             Text(
@@ -159,6 +196,7 @@ private fun CategoriaCard(
 
 /**
  * Función auxiliar para obtener un ID de drawable a partir de su nombre (String).
+ * (Sin cambios)
  */
 @DrawableRes
 @Composable
@@ -166,12 +204,11 @@ private fun painterResourceFromName(context: Context, resName: String): Int {
     return try {
         val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
         if (resId == 0) {
-            // Si no se encuentra, usamos una imagen de fallback (debes tenerla en drawable)
-            R.drawable.ic_launcher_background // Cambia esto por una imagen genérica si quieres
+            R.drawable.ic_launcher_background
         } else {
             resId
         }
     } catch (e: Exception) {
-        R.drawable.ic_launcher_background // Fallback en caso de error
+        R.drawable.ic_launcher_background
     }
 }
