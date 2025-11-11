@@ -34,7 +34,8 @@ class AuthViewModel(
     fun onRegRunChange(valor: String) { _uiState.update { it.copy(regRun = valor, regRunError = null) } }
     fun onRegNombreChange(valor: String) { _uiState.update { it.copy(regNombre = valor, regNombreError = null) } }
     fun onRegApellidosChange(valor: String) { _uiState.update { it.copy(regApellidos = valor, regApellidosError = null) } }
-    fun onRegCorreoChange(valor: String) { _uiState.update { it.copy(regCorreo = valor, regCorreoError = null) } }
+    fun onRegCorreoChange(valor: String) { _uiState.update { it.copy(regCorreo = valor) } }
+    fun onRegCorreoErrorChange(mensaje: String?) { _uiState.update { it.copy(regCorreoError = mensaje) } }
     fun onRegFechaNacimientoChange(valor: String) { _uiState.update { it.copy(regFechaNacimiento = valor, regFechaNacimientoError = null) } }
     fun onRegRegionChange(valor: String) { _uiState.update { it.copy(regRegion = valor, regRegionError = null) } }
     fun onRegComunaChange(valor: String) { _uiState.update { it.copy(regComuna = valor, regComunaError = null) } }

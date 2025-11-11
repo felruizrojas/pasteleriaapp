@@ -36,10 +36,11 @@ fun AdminDashboardScreen(
     badgeCount: Int,
     isLoggedIn: Boolean,
     topBarActions: AppTopBarActions,
-    onNavigateToProductos: () -> Unit,
-    onNavigateToUsuarios: () -> Unit,
+    onNavigateToProductos: (() -> Unit)? = null,
+    onNavigateToUsuarios: (() -> Unit)? = null,
     onNavigateToPedidos: (() -> Unit)? = null,
-    onLogout: (() -> Unit)? = null
+    onLogout: (() -> Unit)? = null,
+    puedeGestionarCatalogoYUsuarios: Boolean
 ) {
     val context = LocalContext.current
     val pedidosClick = remember(onNavigateToPedidos) {
@@ -71,23 +72,29 @@ fun AdminDashboardScreen(
                 onClick = pedidosClick
             )
 
-            DashboardCard(
-                title = "Productos y categorías",
-                description = "Actualiza el catálogo, precios y bloqueos",
-                icon = Icons.Filled.Inventory,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                onClick = onNavigateToProductos
-            )
+            if (puedeGestionarCatalogoYUsuarios) {
+                onNavigateToProductos?.let { navigateProductos ->
+                    DashboardCard(
+                        title = "Productos y categorías",
+                        description = "Actualiza el catálogo, precios y bloqueos",
+                        icon = Icons.Filled.Inventory,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        onClick = navigateProductos
+                    )
+                }
 
-            DashboardCard(
-                title = "Usuarios",
-                description = "Administra roles, bloqueos y cuentas",
-                icon = Icons.Filled.People,
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                onClick = onNavigateToUsuarios
-            )
+                onNavigateToUsuarios?.let { navigateUsuarios ->
+                    DashboardCard(
+                        title = "Usuarios",
+                        description = "Administra roles, bloqueos y cuentas",
+                        icon = Icons.Filled.People,
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                        onClick = navigateUsuarios
+                    )
+                }
+            }
         }
     }
 }

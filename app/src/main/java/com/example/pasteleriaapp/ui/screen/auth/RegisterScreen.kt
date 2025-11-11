@@ -79,7 +79,10 @@ fun RegisterScreen(
             ) {
                 VoiceTextField(
                     value = state.regRun,
-                    onValueChange = viewModel::onRegRunChange,
+                    onValueChange = { raw ->
+                        val sanitized = sanitizeRunInput(raw)
+                        viewModel.onRegRunChange(sanitized)
+                    },
                     label = "RUN (ej: 12345678-9)",
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -90,7 +93,9 @@ fun RegisterScreen(
 
                 VoiceTextField(
                     value = state.regNombre,
-                    onValueChange = viewModel::onRegNombreChange,
+                    onValueChange = { raw ->
+                        viewModel.onRegNombreChange(sanitizeAlphabeticInput(raw))
+                    },
                     label = "Nombre",
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -101,7 +106,9 @@ fun RegisterScreen(
 
                 VoiceTextField(
                     value = state.regApellidos,
-                    onValueChange = viewModel::onRegApellidosChange,
+                    onValueChange = { raw ->
+                        viewModel.onRegApellidosChange(sanitizeAlphabeticInput(raw))
+                    },
                     label = "Apellidos",
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -112,7 +119,14 @@ fun RegisterScreen(
 
                 VoiceTextField(
                     value = state.regCorreo,
-                    onValueChange = viewModel::onRegCorreoChange,
+                    onValueChange = { raw ->
+                        viewModel.onRegCorreoChange(raw)
+                        if (!raw.contains('@')) {
+                            viewModel.onRegCorreoErrorChange("El correo debe contener '@'")
+                        } else {
+                            viewModel.onRegCorreoErrorChange(null)
+                        }
+                    },
                     label = "Correo Electrónico",
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -161,7 +175,9 @@ fun RegisterScreen(
 
                 VoiceTextField(
                     value = state.regRegion,
-                    onValueChange = viewModel::onRegRegionChange,
+                    onValueChange = { raw ->
+                        viewModel.onRegRegionChange(sanitizeAlphabeticInput(raw))
+                    },
                     label = "Región",
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -172,7 +188,9 @@ fun RegisterScreen(
 
                 VoiceTextField(
                     value = state.regComuna,
-                    onValueChange = viewModel::onRegComunaChange,
+                    onValueChange = { raw ->
+                        viewModel.onRegComunaChange(sanitizeAlphabeticInput(raw))
+                    },
                     label = "Comuna",
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -239,4 +257,60 @@ fun RegisterScreen(
             }
         }
     }
+}
+
+private fun sanitizeRunInput(input: String): String {
+    val sanitized = StringBuilder()
+    var hasHyphen = false
+    var verifierLength = 0
+
+    input.forEach { char ->
+        when {
+            char.isDigit() -> {
+                if (!hasHyphen) {
+                    sanitized.append(char)
+                } else if (verifierLength == 0) {
+                    sanitized.append(char)
+                    verifierLength = 1
+                }
+            }
+            char == '-' -> {
+                if (!hasHyphen && sanitized.isNotEmpty()) {
+                    sanitized.append(char)
+                    hasHyphen = true
+                    verifierLength = 0
+                }
+            }
+            char == 'k' || char == 'K' -> {
+                if (hasHyphen && verifierLength == 0) {
+                    sanitized.append('k')
+                    verifierLength = 1
+                }
+            }
+        }
+    }
+
+    return sanitized.toString()
+}
+
+private fun sanitizeAlphabeticInput(input: String): String {
+    val sanitized = StringBuilder()
+    var lastWasSpace = false
+
+    input.forEach { char ->
+        when {
+            char.isLetter() -> {
+                sanitized.append(char)
+                lastWasSpace = false
+            }
+            char.isWhitespace() -> {
+                if (sanitized.isNotEmpty() && !lastWasSpace) {
+                    sanitized.append(' ')
+                    lastWasSpace = true
+                }
+            }
+        }
+    }
+
+    return sanitized.toString().trimEnd()
 }

@@ -42,7 +42,8 @@ fun HomeScreen(
     onNavigateToNosotros: () -> Unit,
     onNavigateToCarrito: () -> Unit,
     onNavigateToBlog: () -> Unit,
-    onOpenInstagram: () -> Unit
+    onOpenInstagram: () -> Unit,
+    onNavigateToAdmin: (() -> Unit)?
 ) {
     val state by authViewModel.uiState.collectAsState()
     val usuario = state.usuarioActual
@@ -60,7 +61,8 @@ fun HomeScreen(
             onOpenInstagram = onOpenInstagram,
             onCartClick = onNavigateToCarrito,
             onProfileClick = onNavigateToPerfil,
-            onLoginClick = onNavigateToAuth
+            onLoginClick = onNavigateToAuth,
+            onNavigateToAdmin = onNavigateToAdmin
         ),
         onLogout = if (usuario != null) { { authViewModel.logout(ctx) } } else null
     ) { paddingValues ->

@@ -104,6 +104,11 @@ fun AppNavGraph(
                 it.tipoUsuario == TipoUsuario.Vendedor
     } == true
 
+    val puedeGestionarCatalogosYUsuarios = authState.usuarioActual?.let {
+        it.tipoUsuario == TipoUsuario.superAdmin ||
+                it.tipoUsuario == TipoUsuario.Administrador
+    } == true
+
     LaunchedEffect(authState.logoutSuccess) {
         if (authState.logoutSuccess) {
             navController.navigate(Rutas.HOME) {
@@ -159,7 +164,10 @@ fun AppNavGraph(
                 onNavigateToNosotros = { navController.navigateSingleTop(Rutas.NOSOTROS) },
                 onNavigateToCarrito = { navController.navigateSingleTop(Rutas.CARRITO) },
                 onNavigateToBlog = { navController.navigateSingleTop(Rutas.BLOG) },
-                onOpenInstagram = openInstagram
+                onOpenInstagram = openInstagram,
+                onNavigateToAdmin = if (puedeAdministrar) {
+                    { navController.navigateSingleTop(Rutas.ADMIN_PANEL) }
+                } else null
             )
         }
 
@@ -339,10 +347,15 @@ fun AppNavGraph(
                     badgeCount = badgeCount,
                     isLoggedIn = isLoggedIn,
                     topBarActions = topBarActions,
-                    onNavigateToProductos = { navController.navigateSingleTop(Rutas.ADMIN_CATALOGO) },
-                    onNavigateToUsuarios = { navController.navigateSingleTop(Rutas.ADMIN_USUARIOS) },
+                    onNavigateToProductos = if (puedeGestionarCatalogosYUsuarios) {
+                        { navController.navigateSingleTop(Rutas.ADMIN_CATALOGO) }
+                    } else null,
+                    onNavigateToUsuarios = if (puedeGestionarCatalogosYUsuarios) {
+                        { navController.navigateSingleTop(Rutas.ADMIN_USUARIOS) }
+                    } else null,
                     onNavigateToPedidos = { navController.navigateSingleTop(Rutas.ADMIN_PEDIDOS) },
-                    onLogout = onLogout
+                    onLogout = onLogout,
+                    puedeGestionarCatalogoYUsuarios = puedeGestionarCatalogosYUsuarios
                 )
             }
         }

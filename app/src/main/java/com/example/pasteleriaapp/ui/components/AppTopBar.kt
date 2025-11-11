@@ -104,7 +104,13 @@ fun AppTopBar(
                             TopBarMenuOption("Instagram", Icons.Default.CameraAlt, actions.onOpenInstagram)
                         )
 
-                        menuOptions.forEach { option ->
+                        val adminOption = actions.onNavigateToAdmin?.let {
+                            TopBarMenuOption("Panel de Administración", Icons.Default.AdminPanelSettings, it)
+                        }
+
+                        val allOptions = if (adminOption != null) menuOptions + adminOption else menuOptions
+
+                        allOptions.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(option.label) },
                                 leadingIcon = {
@@ -149,7 +155,7 @@ fun AppTopBar(
                 IconButton(onClick = navigateToAdmin) {
                     Icon(
                         imageVector = Icons.Default.AdminPanelSettings,
-                        contentDescription = "Administración"
+                        contentDescription = "Panel de administración"
                     )
                 }
             }
