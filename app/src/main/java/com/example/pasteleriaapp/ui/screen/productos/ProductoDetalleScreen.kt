@@ -5,10 +5,8 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,32 +15,31 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import com.example.pasteleriaapp.R
-import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.pasteleriaapp.R
 import com.example.pasteleriaapp.domain.model.Producto
 import com.example.pasteleriaapp.ui.components.AppScaffold
 import com.example.pasteleriaapp.ui.components.AppTopBarActions
@@ -62,15 +59,14 @@ fun ProductoDetalleScreen(
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // --- CÓDIGO CORREGIDO: Usa tus variables originales ---
     LaunchedEffect(state.itemAgregado) {
         if (state.itemAgregado) {
             Toast.makeText(
                 context,
-                "${state.producto?.nombreProducto} añadido al carrito",
+                "${'$'}{state.producto?.nombreProducto} añadido al carrito",
                 Toast.LENGTH_SHORT
             ).show()
-            viewModel.eventoItemAgregadoMostrado() // Resetea el evento
+            viewModel.eventoItemAgregadoMostrado()
         }
     }
 
@@ -79,51 +75,33 @@ fun ProductoDetalleScreen(
         isLoggedIn = isLoggedIn,
         topBarActions = topBarActions,
         pageTitle = "Detalle del Producto",
-        onLogout = onLogout
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver"
-                    )
-                }
-
-                state.producto?.let {
-                    IconButton(onClick = { onEditProductoClick(it.idProducto) }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Editar Producto")
-                    }
+        onBackClick = onBackClick,
+        headerActions = {
+            state.producto?.let { producto ->
+                IconButton(onClick = { onEditProductoClick(producto.idProducto) }) {
+                    Icon(Icons.Default.Edit, contentDescription = "Editar Producto")
                 }
             }
-
-            Spacer(Modifier.height(8.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                when {
-                    state.estaCargando -> CircularProgressIndicator()
-                    state.error != null -> Text("Error: ${state.error}")
-                    state.producto != null -> ProductoDetalle(
-                        state.producto!!,
-                        onAgregarAlCarrito = { mensaje ->
-                            viewModel.agregarAlCarrito(mensaje)
-                        }
-                    )
-                    else -> Text("Producto no encontrado.")
-                }
+        },
+        onLogout = onLogout
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            val producto = state.producto
+            when {
+                state.estaCargando -> CircularProgressIndicator()
+                state.error != null -> Text("Error: ${'$'}{state.error}")
+                producto != null -> ProductoDetalle(
+                    producto = producto,
+                    onAgregarAlCarrito = { mensaje ->
+                        viewModel.agregarAlCarrito(mensaje)
+                    }
+                )
+                else -> Text("Producto no encontrado.")
             }
         }
     }
@@ -137,30 +115,28 @@ private fun ProductoDetalle(
     val context = LocalContext.current
     val imageResId = painterResourceFromName(context, producto.imagenProducto)
 
-    // El mensaje personalizado se maneja localmente (tu lógica original)
     var mensajePersonalizado by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()), // Permite scrollear
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start
     ) {
-
         Image(
             painter = painterResource(id = imageResId),
-            contentDescription = "Imagen de ${producto.nombreProducto}",
+            contentDescription = "Imagen de ${'$'}{producto.nombreProducto}",
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(16f / 9f), // Aspecto 16:9
+                .aspectRatio(16f / 9f)
+                .padding(bottom = 16.dp),
             contentScale = ContentScale.Crop
         )
 
-        // Columna para el contenido de texto con padding
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
             Text(
                 text = producto.nombreProducto,
@@ -169,7 +145,7 @@ private fun ProductoDetalle(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "$${"%.0f".format(producto.precioProducto)}",
+                text = "${'$'}${"%.0f".format(producto.precioProducto)}",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -186,33 +162,30 @@ private fun ProductoDetalle(
             Spacer(Modifier.height(16.dp))
 
             Text(
-                text = "Stock disponible: ${producto.stockProducto} unidades",
+                text = "Stock disponible: ${'$'}{producto.stockProducto} unidades",
                 style = MaterialTheme.typography.bodySmall
             )
             Spacer(Modifier.height(24.dp))
 
-            // --- ¡¡CAMPO ACTUALIZADO A VoiceTextField!! ---
             VoiceTextField(
                 value = mensajePersonalizado,
                 onValueChange = { mensajePersonalizado = it },
                 label = "Mensaje Personalizado (Opcional)",
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = false // Cambiado a false para mensajes largos
+                singleLine = false
             )
-            // --- FIN DEL CAMBIO ---
 
             Spacer(Modifier.height(16.dp))
 
-            // 2. Botón Añadir al Carrito
             Button(
                 onClick = {
                     onAgregarAlCarrito(mensajePersonalizado)
-                    mensajePersonalizado = "" // Limpia el campo
+                    mensajePersonalizado = ""
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    Icons.Default.ShoppingCart,
+                    imageVector = Icons.Default.ShoppingCart,
                     contentDescription = null,
                     modifier = Modifier.padding(end = 8.dp)
                 )
@@ -221,16 +194,14 @@ private fun ProductoDetalle(
 
             Spacer(Modifier.height(8.dp))
 
-            // 3. Botón Compartir
             OutlinedButton(
                 onClick = {
-                    // Llama a la función auxiliar para compartir
                     compartirProducto(context, producto, mensajePersonalizado)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    Icons.Default.Share,
+                    imageVector = Icons.Default.Share,
                     contentDescription = null,
                     modifier = Modifier.padding(end = 8.dp)
                 )
@@ -242,39 +213,29 @@ private fun ProductoDetalle(
 
 private fun compartirProducto(context: Context, producto: Producto, mensaje: String) {
     val textoCompartir = """
-        ¡Mira este increíble producto de Pastelería Mil Sabores!
-        
-        ${producto.nombreProducto} - $${"%.0f".format(producto.precioProducto)}
-        
-        ${producto.descripcionProducto}
-        
-        ${if (mensaje.isNotBlank()) "Mi mensaje: $mensaje" else ""}
-    """.trimIndent()
+		¡Mira este increíble producto de Pastelería Mil Sabores!
+
+		${'$'}{producto.nombreProducto} - ${'$'}${"%.0f".format(producto.precioProducto)}
+
+		${'$'}{producto.descripcionProducto}
+
+		${'$'}{if (mensaje.isNotBlank()) "Mi mensaje: ${'$'}mensaje" else ""}
+	""".trimIndent()
 
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, "Producto: ${producto.nombreProducto}")
+        putExtra(Intent.EXTRA_SUBJECT, "Producto: ${'$'}{producto.nombreProducto}")
         putExtra(Intent.EXTRA_TEXT, textoCompartir)
     }
 
-    context.startActivity(
-        Intent.createChooser(intent, "Compartir producto en...")
-    )
+    context.startActivity(Intent.createChooser(intent, "Compartir producto en..."))
 }
 
-/**
- * Función auxiliar para obtener un ID de drawable a partir de su nombre (String).
- */
 @DrawableRes
-@Composable
 private fun painterResourceFromName(context: Context, resName: String): Int {
     return try {
         val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
-        if (resId == 0) {
-            R.drawable.ic_launcher_background
-        } else {
-            resId
-        }
+        if (resId == 0) R.drawable.ic_launcher_background else resId
     } catch (e: Exception) {
         R.drawable.ic_launcher_background
     }

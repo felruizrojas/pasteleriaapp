@@ -6,15 +6,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -66,6 +62,7 @@ fun RegisterScreen(
         isLoggedIn = isLoggedIn,
         topBarActions = topBarActions,
         pageTitle = "Registro",
+        onBackClick = onBackClick,
         onLogout = onLogout
     ) { paddingValues ->
         Box(
@@ -80,16 +77,6 @@ fun RegisterScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextButton(
-                    onClick = onBackClick,
-                    modifier = Modifier.align(Alignment.Start)
-                ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                    Spacer(Modifier.width(8.dp))
-                    Text("Volver")
-                }
-                Spacer(Modifier.height(8.dp))
-
                 VoiceTextField(
                     value = state.regRun,
                     onValueChange = viewModel::onRegRunChange,

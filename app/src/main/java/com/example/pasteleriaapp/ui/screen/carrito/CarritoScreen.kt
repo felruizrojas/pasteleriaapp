@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -69,6 +68,7 @@ fun CarritoScreen(
         isLoggedIn = isLoggedIn,
         topBarActions = topBarActions,
         pageTitle = "Mi Carrito",
+        onBackClick = onBackClick,
         onLogout = onLogout,
         bottomBar = {
             if (state.hayItems) {
@@ -84,25 +84,20 @@ fun CarritoScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = onBackClick) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                    Spacer(Modifier.width(8.dp))
-                    Text("Volver")
-                }
-
-                if (state.hayItems) {
+            if (state.hayItems) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
                     IconButton(onClick = { viewModel.limpiarCarrito() }) {
                         Icon(Icons.Default.Delete, contentDescription = "Vaciar carrito")
                     }
                 }
-            }
 
-            Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(8.dp))
+            }
 
             Box(
                 modifier = Modifier

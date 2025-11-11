@@ -49,6 +49,7 @@ import com.example.pasteleriaapp.ui.viewmodel.CategoriaViewModel
 fun CategoriasScreen(
     viewModel: CategoriaViewModel,
     onCategoriaClick: (Int) -> Unit,
+    onBackClick: (() -> Unit)? = null,
     badgeCount: Int,
     isLoggedIn: Boolean,
     topBarActions: AppTopBarActions,
@@ -61,6 +62,7 @@ fun CategoriasScreen(
         isLoggedIn = isLoggedIn,
         topBarActions = topBarActions,
         pageTitle = "Catálogo",
+        onBackClick = onBackClick,
         onLogout = onLogout
     ) { paddingValues ->
         Column(

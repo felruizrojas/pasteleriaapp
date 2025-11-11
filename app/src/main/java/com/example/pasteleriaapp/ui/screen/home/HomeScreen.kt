@@ -36,6 +36,7 @@ fun HomeScreen(
     authViewModel: AuthViewModel,
     carritoViewModel: CarritoViewModel,
     onNavigateToAuth: () -> Unit,
+    onNavigateToHome: () -> Unit,
     onNavigateToPerfil: () -> Unit,
     onNavigateToCatalogo: () -> Unit,
     onNavigateToNosotros: () -> Unit,
@@ -52,6 +53,7 @@ fun HomeScreen(
         badgeCount = carritoState.totalArticulos,
         isLoggedIn = usuario != null,
         topBarActions = AppTopBarActions(
+            onNavigateToHome = onNavigateToHome,
             onNavigateToCatalogo = onNavigateToCatalogo,
             onNavigateToBlog = onNavigateToBlog,
             onNavigateToNosotros = onNavigateToNosotros,
@@ -60,7 +62,6 @@ fun HomeScreen(
             onProfileClick = onNavigateToPerfil,
             onLoginClick = onNavigateToAuth
         ),
-        pageTitle = "Inicio",
         onLogout = if (usuario != null) { { authViewModel.logout(ctx) } } else null
     ) { paddingValues ->
         Column(

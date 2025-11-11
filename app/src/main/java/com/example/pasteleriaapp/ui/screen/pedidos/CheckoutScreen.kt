@@ -20,12 +20,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -129,6 +127,7 @@ fun CheckoutScreen(
         isLoggedIn = isLoggedIn,
         topBarActions = topBarActions,
         pageTitle = "Finalizar Compra",
+        onBackClick = onBackClick,
         onLogout = onLogout
     ) { paddingValues ->
         if (usuario == null) {
@@ -151,12 +150,6 @@ fun CheckoutScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            TextButton(onClick = onBackClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
-                Spacer(Modifier.width(8.dp))
-                Text("Volver")
-            }
-
             Text("Resumen del Pedido", style = MaterialTheme.typography.titleLarge)
             Text(
                 "Total a Pagar: $${"%.0f".format(carritoState.precioTotal)}",

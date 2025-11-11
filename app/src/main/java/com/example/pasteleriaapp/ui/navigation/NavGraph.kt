@@ -2,6 +2,7 @@ package com.example.pasteleriaapp.ui.navigation
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -117,13 +118,20 @@ fun AppNavGraph(
     } else null
 
     val openInstagram: () -> Unit = {
-        val instagramIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com"))
-        if (instagramIntent.resolveActivity(ctx.packageManager) != null) {
+        val instagramUrl = "https://www.instagram.com/pasteleria1000sabores?igsh=cXpyOW1wejNhOXF1&utm"
+        val instagramIntent = Intent(Intent.ACTION_VIEW, Uri.parse(instagramUrl)).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+
+        try {
             ctx.startActivity(instagramIntent)
+        } catch (e: Exception) {
+            Toast.makeText(ctx, "No se pudo abrir Instagram", Toast.LENGTH_SHORT).show()
         }
     }
 
     val topBarActions = AppTopBarActions(
+        onNavigateToHome = { navController.navigateSingleTop(Rutas.HOME) },
         onNavigateToCatalogo = { navController.navigateSingleTop(Rutas.CATEGORIAS) },
         onNavigateToBlog = { navController.navigateSingleTop(Rutas.BLOG) },
         onNavigateToNosotros = { navController.navigateSingleTop(Rutas.NOSOTROS) },
@@ -145,6 +153,7 @@ fun AppNavGraph(
                 authViewModel = authViewModel,
                 carritoViewModel = carritoViewModel,
                 onNavigateToAuth = { navController.navigateSingleTop(Rutas.AUTH_FLOW) },
+                onNavigateToHome = { navController.navigateSingleTop(Rutas.HOME) },
                 onNavigateToPerfil = { navController.navigateSingleTop(Rutas.PERFIL) },
                 onNavigateToCatalogo = { navController.navigateSingleTop(Rutas.CATEGORIAS) },
                 onNavigateToNosotros = { navController.navigateSingleTop(Rutas.NOSOTROS) },
@@ -171,6 +180,7 @@ fun AppNavGraph(
             CategoriasScreen(
                 viewModel = viewModel,
                 onCategoriaClick = { id -> navController.navigate(Rutas.obtenerRutaProductos(id)) },
+                onBackClick = { navController.popBackStack() },
                 badgeCount = badgeCount,
                 isLoggedIn = isLoggedIn,
                 topBarActions = topBarActions,
@@ -268,7 +278,11 @@ fun AppNavGraph(
 // --- 7. RUTA NOSOTROS (MODIFICADA) ---
         composable(Rutas.NOSOTROS) {
             NosotrosScreen(
-                onBackClick = { navController.popBackStack() }
+                onBackClick = { navController.popBackStack() },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 
