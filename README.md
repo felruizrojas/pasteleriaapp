@@ -7,8 +7,8 @@
 > - Vendedor: `marcela@profesor.duoc.cl` / `123q`
 
 ## 🔗 Enlaces
-- Repositorio GitHub: https://github.com/ruizRojasFel/pasteleriaapp
-- Tablero Trello: https://trello.com/b/xxxxxxxx/pasteleria-mil-sabores
+- Repositorio GitHub: https://github.com/felruizrojas/PasteleriaApp.git
+- Tablero Trello: https://trello.com/invite/b/68ffbb12ffdab6e0d9e1d482/ATTI5b1666790b7b98cc5ac0cefb41b937290A472219/pasteleria-app
 
 ## 📝 Descripción
 Aplicación Android Jetpack Compose para la pastelería “Mil Sabores”. Permite a clientes navegar el catálogo, gestionar compras y seguir pedidos, mientras que el personal autorizado administra inventario, usuarios y órdenes en un panel integral.
