@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// --- TU NUEVA PALETA DE COLORES CLAROS ---
+// --- TU PALETA DE COLORES CLAROS ---
 private val LightColorScheme = lightColorScheme(
     primary = TituloMain,              // El rosa principal para botones, etc.
     onPrimary = Surface,               // Texto/iconos sobre el rosa (Blanco)
@@ -38,7 +38,7 @@ private val LightColorScheme = lightColorScheme(
     outline = InkMuted                 // Bordes (Gris)
 )
 
-// --- TU NUEVA PALETA DE COLORES OSCUROS (Sugerida) ---
+// --- TU PALETA DE COLORES OSCUROS ---
 private val DarkColorScheme = darkColorScheme(
     primary = DarkTituloMain,          // Rosa brillante para modo oscuro
     onPrimary = DarkInk,               // Texto claro sobre el rosa
@@ -68,31 +68,19 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun PasteleriaAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // ¡¡CAMBIO IMPORTANTE!!
-    // Forzamos a 'false' para que SIEMPRE use tu paleta de colores
-    // y no los colores del fondo de pantalla del usuario.
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        // 'dynamicColor' está desactivado, así que esta lógica ya no se usa
-        // dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-        //     val context = LocalContext.current
-        //     if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        // }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
-    // Control de la barra de estado (para que combine con la TopAppBar)
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Cambia el color de la barra de estado al color 'primary' (Rosa)
             window.statusBarColor = colorScheme.primary.toArgb()
-            // Controla si los iconos de la barra (reloj, batería) son oscuros o claros
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }

@@ -1,5 +1,6 @@
 package com.example.pasteleriaapp.data.repository
 
+import com.example.pasteleriaapp.core.security.PasswordHasher
 import com.example.pasteleriaapp.data.local.dao.UsuarioDao
 import com.example.pasteleriaapp.data.local.entity.toUsuario
 import com.example.pasteleriaapp.data.local.entity.toUsuarioEntity
@@ -22,7 +23,7 @@ class UsuarioRepositoryImpl(
         }
 
         // 2. Verifica si la contraseña coincide
-        if (usuarioEntity.contrasena == contrasena) {
+        if (PasswordHasher.verify(contrasena, usuarioEntity.contrasena)) {
             if (usuarioEntity.estaBloqueado) {
                 throw IllegalStateException("Tu cuenta está bloqueada. Contacta al administrador.")
             }
@@ -47,7 +48,8 @@ class UsuarioRepositoryImpl(
         }
 
         // 3. Si no existe, insertar
-        dao.insertarUsuario(usuario.toUsuarioEntity())
+        val hashedUsuario = usuario.copy(contrasena = PasswordHasher.hash(usuario.contrasena))
+        dao.insertarUsuario(hashedUsuario.toUsuarioEntity())
     }
 
     override suspend fun actualizarUsuario(usuario: Usuario) {

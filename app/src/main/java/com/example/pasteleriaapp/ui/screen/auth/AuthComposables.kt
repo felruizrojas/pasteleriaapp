@@ -18,9 +18,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 
-/**
- * Un OutlinedTextField que maneja la visibilidad de la contraseña.
- */
 @Composable
 fun PasswordTextField(
     value: String,

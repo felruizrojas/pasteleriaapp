@@ -3,7 +3,6 @@ package com.example.pasteleriaapp.ui.state
 import com.example.pasteleriaapp.domain.model.TipoUsuario
 import com.example.pasteleriaapp.domain.model.Usuario
 
-/** Estado para la vista de administración de usuarios. */
 data class UserManagementUiState(
     val isLoading: Boolean = false,
     val isActionInProgress: Boolean = false,

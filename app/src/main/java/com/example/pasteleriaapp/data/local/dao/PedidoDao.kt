@@ -14,14 +14,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PedidoDao {
 
-    // Inserta un pedido y DEVUELVE el ID autogenerado (en Long)
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarPedido(pedido: PedidoEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertarPedidoProductos(productos: List<PedidoProductoEntity>)
-
-    // --- Funciones para la UI ---
 
     @Query("SELECT * FROM pedido WHERE idUsuario = :idUsuario ORDER BY fechaPedido DESC")
     fun obtenerPedidosPorUsuario(idUsuario: Int): Flow<List<PedidoEntity>>

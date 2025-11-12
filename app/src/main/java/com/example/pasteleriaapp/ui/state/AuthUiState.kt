@@ -5,7 +5,6 @@ import com.example.pasteleriaapp.domain.model.Usuario
 import android.net.Uri
 
 data class AuthUiState(
-    // Estado general
     val isLoading: Boolean = false,
     val error: String? = null,
     val loginSuccess: Boolean = false,
@@ -15,11 +14,9 @@ data class AuthUiState(
     val updateSuccess: Boolean = false,
 
     val fotoUri: Uri? = null,
-    // --- Campos de Login ---
     val loginCorreo: String = "",
     val loginContrasena: String = "",
 
-    // --- Campos de Registro ---
     val regRun: String = "",
     val regNombre: String = "",
     val regApellidos: String = "",
@@ -32,7 +29,6 @@ data class AuthUiState(
     val regRepetirContrasena: String = "",
     val regCodigoPromo: String = "",
 
-    // mostrar mensajes de error
     val regRunError: String? = null,
     val regNombreError: String? = null,
     val regApellidosError: String? = null,

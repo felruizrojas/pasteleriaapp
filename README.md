@@ -5,6 +5,8 @@
 > - Superadmin: `ana@duoc.cl` / `123q`
 > - Administrador: `luis@duoc.cl` / `123q`
 > - Vendedor: `marcela@profesor.duoc.cl` / `123q`
+> - Cliente: `claudia.fernandez@gmail.com` / `123q`
+
 
 ## 🔗 Enlaces
 - Repositorio GitHub: https://github.com/felruizrojas/PasteleriaApp.git
@@ -35,15 +37,36 @@ Digitalizar el flujo de venta y administración de la pastelería, ofreciendo un
 ```text
 app/src/main/
 ├── java/com/example/pasteleriaapp/
-│   ├── data/             # DAOs, base de datos y repositorios
-│   ├── domain/           # Modelos y reglas de negocio
-│   ├── ui/
-│   │   ├── components/   # Scaffold, top bar, campos reutilizables
-│   │   ├── navigation/   # NavGraph y rutas
-│   │   ├── screen/       # Pantallas (auth, home, productos, admin, etc.)
-│   │   └── theme/        # Paleta y temas Material
-│   └── utils/            # Helpers y extensiones
-└── res/                  # Recursos gráficos, layouts y strings
+│   ├── core/                                   # Utilidades compartidas (p.ej. seguridad, helpers transversales)
+│   ├── data/                                   # Capa de datos (persistencia local)
+│   │   ├── local/                              # Persistencia local con Room
+│   │   │   ├── dao/                            # Data Access Objects (consultas SQL)
+│   │   │   ├── entity/                         # Entidades de base de datos
+│   │   │   ├── AppDatabase.kt                  # Clase principal de la base de datos
+│   │   │   └── TypeConverters.kt               # Conversores para tipos personalizados
+│   │   └── repository/                         # Implementaciones concretas de repositorios
+│   ├── domain/                                 # Capa de dominio (reglas de negocio)
+│   │   ├── model/                              # Modelos de negocio independientes de UI o DB
+│   │   └── repository/                         # Interfaces abstractas para los repositorios
+│   ├── ui/                                     # Capa de presentación (Jetpack Compose)
+│   │   ├── components/                         # Componentes reutilizables (Scaffold, botones, etc.)
+│   │   ├── navigation/                         # NavGraph y rutas de navegación
+│   │   ├── screen/                             # Pantallas de la app
+│   │   │   ├── admin/                          # Pantalla o módulo de administración
+│   │   │   ├── auth/                           # Login, registro y autenticación
+│   │   │   ├── blog/                           # Sección de noticias o blog
+│   │   │   ├── carrito/                        # Carrito de compras
+│   │   │   ├── home/                           # Pantalla principal
+│   │   │   ├── nosotros/                       # Sección "Sobre nosotros"
+│   │   │   ├── pedidos/                        # Historial y gestión de pedidos
+│   │   │   ├── productos/                      # Catálogo y detalle de productos
+│   │   │   └── profile/                        # Perfil del usuario
+│   │   ├── state/                              # Clases de estado (UIState, Event, etc.)
+│   │   ├── theme/                              # Paleta, tipografías y estilos Material3
+│   │   └── viewmodel/                          # ViewModels que manejan la lógica de UI
+│   └── MainActivity.kt                         # Punto de entrada principal de la aplicación
+└── res/                                        # Recursos XML (colores, layouts, drawables, strings, etc.)
+
 ```
 
 ## 🧭 Mapa del sitio / flujo de pantallas
@@ -67,7 +90,7 @@ app/src/main/
 - RUN chileno: formato numérico con guion y dígito verificador (`0-9` o `k`).
 - Nombre, apellidos, región y comuna: solo letras y espacios.
 - Correo electrónico: requiere `@` y validación adicional en el ViewModel.
-- Contraseña: restringida a caracteres alfanuméricos y coincidencia de confirmación.
+- Contraseña: protegida con hash seguro (no se almacena en texto plano) y validada por coincidencia entre contraseña y confirmación.
 - Reglas de negocio adicionales en checkout (descuentos por edad, código promocional y dominio DUOC).
 
 ## 📜 Licencia

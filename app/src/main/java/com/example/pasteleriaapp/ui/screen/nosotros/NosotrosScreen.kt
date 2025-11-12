@@ -82,9 +82,6 @@ fun NosotrosScreen(
     }
 }
 
-/**
- * Un Composable reutilizable para mostrar una sección de [Imagen - Título - Texto]
- */
 @Composable
 private fun InfoSection(
     title: String,
@@ -119,15 +116,10 @@ private fun InfoSection(
     }
 }
 
-/**
- * Función auxiliar para obtener un ID de drawable a partir de su nombre (String).
- */
 @DrawableRes
 @Composable
 private fun painterResourceFromName(context: Context, resName: String): Int {
     return try {
-        // Asumimos que las imágenes (ej. "diversos_productos.jpg")
-        // se guardan en res/drawable como "diversos_productos"
         val cleanResName = resName.substringBefore(".")
         val resId = context.resources.getIdentifier(cleanResName, "drawable", context.packageName)
         if (resId == 0) {

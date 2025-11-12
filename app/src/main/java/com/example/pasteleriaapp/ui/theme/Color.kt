@@ -13,7 +13,7 @@ val InkMuted = Color(0xFF6C757D)          // --ink-muted (Gris, texto secundario
 val Surface = Color(0xFFFFFFFF)            // --surface (Blanco puro)
 val SurfaceAlt = Color(0xFFFAFAFA)         // --surface-alt (Blanco hueso)
 
-// --- Colores Sugeridos para Modo Oscuro ---
+// --- Colores para Modo Oscuro ---
 val DarkTituloMain = Color(0xFFE08DC0)      // Rosa un poco más brillante
 val DarkInk = Color(0xFFF0F0F0)            // Texto claro
 val DarkSurface = Color(0xFF1C1B1F)        // Fondo oscuro estándar M3

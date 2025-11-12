@@ -8,7 +8,7 @@ import com.example.pasteleriaapp.domain.model.PedidoProducto
 data class PedidoProductoEntity(
     @PrimaryKey(autoGenerate = true)
     val idPedidoProducto: Int = 0,
-    val idPedido: Int, // Clave foránea a PedidoEntity
+    val idPedido: Int,
     val idProducto: Int,
     val nombreProducto: String,
     val precioProducto: Double,

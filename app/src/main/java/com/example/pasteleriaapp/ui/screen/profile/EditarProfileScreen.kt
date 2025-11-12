@@ -43,7 +43,6 @@ fun EditarProfileScreen(
     val state by authViewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // --- LÓGICA DE CÁMARA (MODIFICADA) ---
     val cameraPermissionState = rememberPermissionState(
         android.Manifest.permission.CAMERA
     )
@@ -52,11 +51,9 @@ fun EditarProfileScreen(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { newBitmap: Bitmap? ->
         if (newBitmap != null) {
-            // Guardamos el bitmap usando el ViewModel
             authViewModel.guardarFotoPerfil(newBitmap, context)
         }
     }
-    // --- FIN LÓGICA DE CÁMARA ---
 
     LaunchedEffect(Unit) {
         authViewModel.cargarDatosPerfil()
@@ -78,7 +75,6 @@ fun EditarProfileScreen(
     }
 
     Scaffold(
-        // ... (TopAppBar sin cambios) ...
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             Column(
@@ -89,7 +85,6 @@ fun EditarProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                // --- UI DE CÁMARA (MODIFICADA) ---
                 Box(
                     modifier = Modifier
                         .size(120.dp)
@@ -99,7 +94,6 @@ fun EditarProfileScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     if (state.fotoUri != null) {
-                        // Usamos Coil para cargar la foto guardada
                         AsyncImage(
                             model = state.fotoUri,
                             contentDescription = "Foto de perfil",
@@ -107,7 +101,6 @@ fun EditarProfileScreen(
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
-                        // Icono por defecto
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "Tomar foto",
@@ -127,16 +120,13 @@ fun EditarProfileScreen(
                     Icon(Icons.Default.CameraAlt, "Cámara", modifier = Modifier.padding(end = 8.dp))
                     Text("Cambiar Foto")
                 }
-                // --- FIN UI DE CÁMARA ---
 
                 Spacer(Modifier.height(24.dp))
 
-                // ... (InfoRow de RUN y Correo sin cambios) ...
                 InfoRow(label = "RUN:", value = state.usuarioActual?.run ?: "")
                 InfoRow(label = "Correo:", value = state.usuarioActual?.correo ?: "")
                 Spacer(Modifier.height(16.dp))
 
-                // ... (Todos los VoiceTextField sin cambios) ...
                 VoiceTextField(value = state.profNombre, onValueChange = authViewModel::onProfNombreChange, label = "Nombre", modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(8.dp))
                 VoiceTextField(value = state.profApellidos, onValueChange = authViewModel::onProfApellidosChange, label = "Apellidos", modifier = Modifier.fillMaxWidth())
@@ -148,7 +138,6 @@ fun EditarProfileScreen(
                 VoiceTextField(value = state.profDireccion, onValueChange = authViewModel::onProfDireccionChange, label = "Dirección", modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(24.dp))
 
-                // ... (Botón Guardar Cambios y CircularProgressIndicator sin cambios) ...
                 Button(onClick = { authViewModel.guardarCambiosPerfil() }, modifier = Modifier.fillMaxWidth(), enabled = !state.isLoading) {
                     Text("Guardar Cambios")
                 }

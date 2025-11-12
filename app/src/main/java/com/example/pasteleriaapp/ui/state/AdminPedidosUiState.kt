@@ -4,9 +4,6 @@ import com.example.pasteleriaapp.domain.model.EstadoPedido
 import com.example.pasteleriaapp.domain.model.Pedido
 import com.example.pasteleriaapp.domain.model.Usuario
 
-/**
- * Representa un pedido enriquecido con información del cliente para uso administrativo.
- */
 data class PedidoAdminItem(
     val pedido: Pedido,
     val cliente: Usuario?

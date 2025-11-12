@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class PedidoRepositoryImpl(
-    private val db: AppDatabase // Pedimos la BD completa para la transacción
+    private val db: AppDatabase
 ) : PedidoRepository {
 
     private val pedidoDao = db.pedidoDao()

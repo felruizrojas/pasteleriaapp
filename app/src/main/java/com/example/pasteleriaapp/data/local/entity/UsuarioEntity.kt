@@ -41,8 +41,6 @@ data class UsuarioEntity(
     val fotoUrl: String? = null
 )
 
-// MAPPERS
-
 fun UsuarioEntity.toUsuario() = Usuario(
     idUsuario = idUsuario,
     run = run,

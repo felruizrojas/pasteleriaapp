@@ -11,7 +11,7 @@ data class Usuario(
     val region: String,
     val comuna: String,
     val direccion: String,
-    val contrasena: String, // Usamos 'contrasena' para no colisionar con 'password'
+    val contrasena: String,
 
     val tieneDescuentoEdad: Boolean = false,
     val tieneDescuentoCodigo: Boolean = false,

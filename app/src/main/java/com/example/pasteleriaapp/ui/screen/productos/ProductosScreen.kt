@@ -131,9 +131,6 @@ fun ProductoListScreen(
     }
 }
 
-// --- El resto del archivo (ProductosGrid, ProductoCard, painterResourceFromName) ---
-// --- NO NECESITA CAMBIOS ---
-
 @Composable
 private fun ProductosGrid(
     productos: List<Producto>,

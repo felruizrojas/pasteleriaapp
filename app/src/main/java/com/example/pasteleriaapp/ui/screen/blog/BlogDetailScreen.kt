@@ -31,9 +31,7 @@ fun BlogDetailScreen(
     postId: String,
     onBackClick: () -> Unit
 ) {
-    // Obtenemos el post estático
     val post = remember { BlogData.getPostById(postId) }
-    // Obtenemos el contexto para el Intent de compartir
     val context = LocalContext.current
 
     Scaffold(
@@ -110,12 +108,7 @@ fun BlogDetailScreen(
     }
 }
 
-/**
- * --- NUEVA FUNCIÓN AUXILIAR AÑADIDA ---
- * Crea un Intent de Android para compartir el artículo del blog.
- */
 private fun compartirBlogPost(context: Context, post: BlogPost) {
-    // Tomamos solo los primeros 100 caracteres del contenido para el resumen
     val resumenContenido = post.contenido.take(100) + "..."
 
     val textoCompartir = """

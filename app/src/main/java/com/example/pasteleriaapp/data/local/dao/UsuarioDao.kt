@@ -21,11 +21,9 @@ interface UsuarioDao {
     @Query("SELECT * FROM usuario WHERE run = :run LIMIT 1")
     suspend fun obtenerUsuarioPorRun(run: String): UsuarioEntity?
 
-    // Para pre-poblar
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertarUsuarios(usuarios: List<UsuarioEntity>)
 
-    // --- FUNCIÓN NUEVA AÑADIDA ---
     @Update
     suspend fun actualizarUsuario(usuario: UsuarioEntity)
 

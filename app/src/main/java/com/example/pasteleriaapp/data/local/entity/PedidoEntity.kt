@@ -12,7 +12,7 @@ data class PedidoEntity(
     val idUsuario: Int,
     val fechaPedido: Long,
     val fechaEntregaPreferida: String,
-    val estado: EstadoPedido, // Room usará el TypeConverter
+    val estado: EstadoPedido,
     val total: Double
 )
 

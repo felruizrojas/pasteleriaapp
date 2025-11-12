@@ -6,5 +6,5 @@ data class ProductoDetalleUiState(
     val estaCargando: Boolean = false,
     val producto: Producto? = null,
     val error: String? = null,
-    val itemAgregado: Boolean = false // <-- CAMPO AÑADIDO
+    val itemAgregado: Boolean = false
 )

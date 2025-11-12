@@ -21,7 +21,6 @@ fun ProductoFormScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    // Navega hacia atrás automáticamente cuando el guardado es exitoso
     LaunchedEffect(state.guardadoExitoso) {
         if (state.guardadoExitoso) {
             onBackClick()
@@ -54,7 +53,6 @@ fun ProductoFormScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Campo Nombre
             OutlinedTextField(
                 value = state.nombre,
                 onValueChange = viewModel::onNombreChange,
@@ -64,7 +62,6 @@ fun ProductoFormScreen(
             )
             Spacer(Modifier.height(8.dp))
 
-            // Campo Código
             OutlinedTextField(
                 value = state.codigo,
                 onValueChange = viewModel::onCodigoChange,
@@ -74,7 +71,6 @@ fun ProductoFormScreen(
             )
             Spacer(Modifier.height(8.dp))
 
-            // Fila para Precio y Stock
             Row(Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = state.precio,
@@ -95,7 +91,6 @@ fun ProductoFormScreen(
             }
             Spacer(Modifier.height(8.dp))
 
-            // Campo Descripción
             OutlinedTextField(
                 value = state.descripcion,
                 onValueChange = viewModel::onDescripcionChange,
@@ -104,7 +99,6 @@ fun ProductoFormScreen(
             )
             Spacer(Modifier.height(16.dp))
 
-            // Botón Guardar
             Button(
                 onClick = viewModel::guardarProducto,
                 modifier = Modifier.fillMaxWidth()
@@ -112,7 +106,6 @@ fun ProductoFormScreen(
                 Text("Guardar")
             }
 
-            // Mostrar error si existe
             state.error?.let {
                 Spacer(Modifier.height(8.dp))
                 Text(it, color = MaterialTheme.colorScheme.error)
