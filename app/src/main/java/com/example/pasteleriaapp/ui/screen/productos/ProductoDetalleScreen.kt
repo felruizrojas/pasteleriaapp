@@ -145,8 +145,13 @@ private fun ProductoDetalle(
             )
             Spacer(Modifier.height(8.dp))
 
+            val formatoMoneda = remember { java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CL")).apply {
+                maximumFractionDigits = 0
+                isGroupingUsed = true
+            } }
+
             Text(
-                text = "$${"%.0f".format(producto.precioProducto)}",
+                text = "$${formatoMoneda.format(producto.precioProducto)}",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -213,15 +218,20 @@ private fun ProductoDetalle(
 }
 
 private fun compartirProducto(context: Context, producto: Producto, mensaje: String) {
+    val formatoMoneda = java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CL")).apply {
+        maximumFractionDigits = 0
+        isGroupingUsed = true
+    }
+
     val textoCompartir = """
         ¡Mira este increíble producto de Pastelería Mil Sabores!
 
-        ${producto.nombreProducto} - $${"%.0f".format(producto.precioProducto)}
+        ${producto.nombreProducto} - $${formatoMoneda.format(producto.precioProducto)}
 
         ${producto.descripcionProducto}
 
         ${if (mensaje.isNotBlank()) "Mi mensaje: $mensaje" else ""}
-	""".trimIndent()
+    """.trimIndent()
 
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"

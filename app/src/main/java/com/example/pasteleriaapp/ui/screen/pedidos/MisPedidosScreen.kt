@@ -120,7 +120,13 @@ fun PedidoRow(pedido: Pedido, onClick: () -> Unit) {
             )
             InfoRow(label = "Fecha Pedido:", value = dateFormatter.format(Date(pedido.fechaPedido)))
             InfoRow(label = "Entrega:", value = pedido.fechaEntregaPreferida)
-            InfoRow(label = "Total:", value = "$${"%.0f".format(pedido.total)}")
+            val formatoMoneda = remember {
+                java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CL")).apply {
+                    maximumFractionDigits = 0
+                    isGroupingUsed = true
+                }
+            }
+            InfoRow(label = "Total:", value = "$${formatoMoneda.format(pedido.total)}")
         }
     }
 }

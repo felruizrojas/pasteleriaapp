@@ -358,8 +358,12 @@ private fun generarBoletaPdf(
 
     canvas.drawText("Detalle de productos:", 40f, y, bodyPaint)
     y += 20f
+    val formatoMoneda = java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CL")).apply {
+        maximumFractionDigits = 0
+        isGroupingUsed = true
+    }
     items.forEach { item ->
-        canvas.drawText("${item.cantidad}x ${item.nombreProducto} - $${"%.0f".format(item.precioProducto)}", 40f, y, bodyPaint)
+        canvas.drawText("${item.cantidad}x ${item.nombreProducto} - $${formatoMoneda.format(item.precioProducto)}", 40f, y, bodyPaint)
         y += 20f
         if (item.mensajePersonalizado.isNotBlank()) {
             canvas.drawText("Dedicatoria: ${item.mensajePersonalizado}", 60f, y, bodyPaint)

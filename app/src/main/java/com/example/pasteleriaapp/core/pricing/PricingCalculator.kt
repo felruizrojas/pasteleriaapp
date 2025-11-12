@@ -81,7 +81,12 @@ data class PricingSummary(
     val total: Double
 ) {
     val tieneDescuento: Boolean get() = descuento > 0.0
-    fun formatoMoneda(valor: Double): String = "%.0f".format(valor)
+    private val formatChile = java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CL")).apply {
+        maximumFractionDigits = 0
+        isGroupingUsed = true
+    }
+
+    fun formatoMoneda(valor: Double): String = formatChile.format(valor)
     val subtotalFormateado get() = formatoMoneda(subtotal)
     val descuentoFormateado get() = formatoMoneda(descuento)
     val totalFormateado get() = formatoMoneda(total)

@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -133,7 +134,13 @@ private fun DetallesPedidoHeader(pedido: Pedido) {
         )
         InfoRow(label = "Fecha Pedido:", value = dateFormatter.format(Date(pedido.fechaPedido)))
         InfoRow(label = "Fecha Entrega:", value = pedido.fechaEntregaPreferida)
-        InfoRow(label = "Total Pagado:", value = "$${"%.0f".format(pedido.total)}")
+        val formatoMoneda = remember {
+            java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CL")).apply {
+                maximumFractionDigits = 0
+                isGroupingUsed = true
+            }
+        }
+        InfoRow(label = "Total Pagado:", value = "$${formatoMoneda.format(pedido.total)}")
     }
 }
 
