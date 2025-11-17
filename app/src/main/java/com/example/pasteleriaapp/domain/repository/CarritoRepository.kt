@@ -5,15 +5,15 @@ import com.example.pasteleriaapp.domain.model.Producto
 import kotlinx.coroutines.flow.Flow
 
 interface CarritoRepository {
-    fun obtenerItemsCarrito(): Flow<List<CarritoItem>>
+    fun obtenerItemsCarrito(usuarioId: Int): Flow<List<CarritoItem>>
 
-    suspend fun agregarAlCarrito(producto: Producto, cantidad: Int, mensaje: String)
+    suspend fun agregarAlCarrito(usuarioId: Int, producto: Producto, cantidad: Int, mensaje: String)
 
-    suspend fun actualizarCantidadItem(item: CarritoItem, nuevaCantidad: Int)
+    suspend fun actualizarCantidadItem(usuarioId: Int, item: CarritoItem, nuevaCantidad: Int)
 
-    suspend fun eliminarItem(item: CarritoItem)
+    suspend fun eliminarItem(usuarioId: Int, item: CarritoItem)
 
-    suspend fun limpiarCarrito()
+    suspend fun limpiarCarrito(usuarioId: Int)
 
-    suspend fun actualizarMensajeItem(idCarrito: Int, nuevoMensaje: String)
+    suspend fun actualizarMensajeItem(usuarioId: Int, idCarrito: Int, nuevoMensaje: String)
 }

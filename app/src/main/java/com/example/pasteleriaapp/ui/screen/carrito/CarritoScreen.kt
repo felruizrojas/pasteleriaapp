@@ -60,7 +60,8 @@ fun CarritoScreen(
     isLoggedIn: Boolean,
     topBarActions: AppTopBarActions,
     onLogout: (() -> Unit)?,
-    usuario: Usuario?
+    usuario: Usuario?,
+    onRequireLogin: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -86,6 +87,30 @@ fun CarritoScreen(
             }
         }
     ) { paddingValues ->
+        if (state.requiereAutenticacion) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Debes iniciar sesión para ver tu carrito.",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Button(onClick = onRequireLogin) {
+                        Text("Iniciar sesión")
+                    }
+                }
+            }
+            return@AppScaffold
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -187,6 +212,12 @@ fun CarritoItemRow(
 ) {
     val context = LocalContext.current
     val imageResId = painterResourceFromName(context, item.imagenProducto)
+    val formatoMoneda = remember {
+        java.text.NumberFormat.getNumberInstance(java.util.Locale("es", "CL")).apply {
+            maximumFractionDigits = 0
+            isGroupingUsed = true
+        }
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -212,7 +243,7 @@ fun CarritoItemRow(
             // Nombre y Precio
             Column(modifier = Modifier.weight(1f)) {
                 Text(item.nombreProducto, style = MaterialTheme.typography.titleMedium)
-                Text("$${item.precioProducto}", style = MaterialTheme.typography.bodyMedium)
+                Text("$${formatoMoneda.format(item.precioProducto)}", style = MaterialTheme.typography.bodyMedium)
                 val mensaje = item.mensajePersonalizado
                 AssistChip(
                     onClick = onEditarMensaje,

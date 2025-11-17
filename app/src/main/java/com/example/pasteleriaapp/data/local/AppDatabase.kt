@@ -33,7 +33,7 @@ import kotlinx.coroutines.launch
         PedidoEntity::class,
         PedidoProductoEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(com.example.pasteleriaapp.data.local.TypeConverters::class)
@@ -109,6 +109,19 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE carrito ADD COLUMN idUsuario INTEGER NOT NULL DEFAULT -1")
+                db.execSQL("UPDATE carrito SET mensajePersonalizado = TRIM(IFNULL(mensajePersonalizado, ''))")
+                db.execSQL("DROP INDEX IF EXISTS idx_carrito_producto_mensaje")
+                db.execSQL("DROP INDEX IF EXISTS index_carrito_idProducto_mensajePersonalizado")
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_carrito_idUsuario_idProducto_mensajePersonalizado ON carrito(idUsuario, idProducto, mensajePersonalizado)"
+                )
+                db.execSQL("DELETE FROM carrito WHERE idUsuario = -1")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -122,7 +135,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_3_4,
                         MIGRATION_4_5,
                         MIGRATION_5_6,
-                        MIGRATION_6_7
+                        MIGRATION_6_7,
+                        MIGRATION_7_8
                     )
                     .addCallback(AppDatabaseCallback(context))
                     .build()
@@ -355,7 +369,7 @@ abstract class AppDatabase : RoomDatabase() {
                         "Ana María",
                         "Pérez Soto",
                         "ana@duoc.cl",
-                        "12-11-1992",
+                        "12-05-1992",
                         TipoUsuario.superAdmin,
                         "Metropolitana",
                         "Santiago",
@@ -373,8 +387,8 @@ abstract class AppDatabase : RoomDatabase() {
                         "12345678-5",
                         "Luis Felipe",
                         "González Fuentes",
-                        "luis@gmail.com",
-                        "20-11-1950",
+                        "luis@duoc.cl",
+                        "20-11-1989",
                         TipoUsuario.Administrador,
                         "Valparaíso",
                         "Viña del Mar",
@@ -392,7 +406,7 @@ abstract class AppDatabase : RoomDatabase() {
                         "14567832-3",
                         "Marcela Andrea",
                         "Rojas Díaz",
-                        "marcela@gmail.com",
+                        "marcela@profesor.duoc.cl",
                         "03-09-1976",
                         TipoUsuario.Vendedor,
                         "Biobío",
@@ -400,7 +414,7 @@ abstract class AppDatabase : RoomDatabase() {
                         "Pasaje Los Álamos 789",
                         "123q",
                         false,
-                        true,
+                        false,
                         true,
                         false,
                         null

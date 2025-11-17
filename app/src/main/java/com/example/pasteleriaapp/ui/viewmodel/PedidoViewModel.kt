@@ -8,7 +8,6 @@ import com.example.pasteleriaapp.domain.model.Pedido
 import com.example.pasteleriaapp.domain.model.PedidoProducto
 import com.example.pasteleriaapp.domain.repository.CarritoRepository
 import com.example.pasteleriaapp.domain.repository.PedidoRepository
-import com.example.pasteleriaapp.ui.state.CarritoUiState
 import com.example.pasteleriaapp.domain.model.CarritoItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -156,7 +155,7 @@ class PedidoViewModel(
                 val idGenerado: Long = pedidoRepository.crearPedido(nuevoPedido, itemsDominio)
 
                 // 4. Actualizamos el estado con el ID real del pedido
-                carritoRepository.limpiarCarrito()
+                carritoRepository.limpiarCarrito(idUsuario)
                 _checkoutState.update {
                     it.copy(estaCargando = false, pedidoCreadoId = idGenerado)
                 }

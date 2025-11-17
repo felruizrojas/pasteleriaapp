@@ -109,6 +109,10 @@ fun AppNavGraph(
                 it.tipoUsuario == TipoUsuario.Administrador
     } == true
 
+    LaunchedEffect(authState.usuarioActual?.idUsuario) {
+        carritoViewModel.observarCarrito(authState.usuarioActual?.idUsuario)
+    }
+
     LaunchedEffect(authState.logoutSuccess) {
         if (authState.logoutSuccess) {
             navController.navigate(Rutas.HOME) {
@@ -215,9 +219,6 @@ fun AppNavGraph(
                 onProductoClick = { idProducto ->
                     navController.navigate(Rutas.obtenerRutaDetalleProducto(idProducto))
                 },
-                onAddProductoClick = {
-                    navController.navigate(Rutas.obtenerRutaNuevoProducto(idCategoria))
-                },
                 badgeCount = badgeCount,
                 isLoggedIn = isLoggedIn,
                 topBarActions = topBarActions,
@@ -246,13 +247,12 @@ fun AppNavGraph(
             ProductoDetalleScreen(
                 viewModel = viewModel,
                 onBackClick = { navController.popBackStack() },
-                onEditProductoClick = {
-                    navController.navigate(Rutas.obtenerRutaEditarProducto(it))
-                },
                 badgeCount = badgeCount,
                 isLoggedIn = isLoggedIn,
                 topBarActions = topBarActions,
-                onLogout = onLogout
+                onLogout = onLogout,
+                usuario = authState.usuarioActual,
+                onRequireLogin = { navController.navigateSingleTop(Rutas.AUTH_FLOW) }
             )
         }
 
@@ -306,7 +306,8 @@ fun AppNavGraph(
                 isLoggedIn = isLoggedIn,
                 topBarActions = topBarActions,
                 onLogout = onLogout,
-                usuario = authState.usuarioActual
+                usuario = authState.usuarioActual,
+                onRequireLogin = { navController.navigateSingleTop(Rutas.AUTH_FLOW) }
             )
         }
 
@@ -567,7 +568,12 @@ private fun NavGraphBuilder.authGraph(
                 },
                 onNavigateToRegister = {
                     navController.navigate(Rutas.REGISTRO)
-                }
+                },
+                onBackClick = { navController.popBackStack() },
+                badgeCount = badgeCount,
+                isLoggedIn = isLoggedIn,
+                topBarActions = topBarActions,
+                onLogout = onLogout
             )
         }
 

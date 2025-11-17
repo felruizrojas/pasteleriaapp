@@ -2,6 +2,7 @@ package com.example.pasteleriaapp.domain.model
 
 data class CarritoItem(
     val idCarrito: Int = 0,
+    val usuarioId: Int,
     val idProducto: Int,
     val nombreProducto: String,
     val precioProducto: Double,

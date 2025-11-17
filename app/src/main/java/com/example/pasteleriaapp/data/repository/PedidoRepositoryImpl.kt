@@ -43,8 +43,8 @@ class PedidoRepositoryImpl(
             // 3. Insertar todos los productos del pedido
             pedidoDao.insertarPedidoProductos(pedidoProductos)
 
-            // 4. Limpiar el carrito
-            carritoDao.limpiarCarrito()
+            // 4. Limpiar el carrito del usuario
+            carritoDao.limpiarCarrito(pedido.idUsuario)
 
             // 5. Devolver el ID generado
             idPedidoLong

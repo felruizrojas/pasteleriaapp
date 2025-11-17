@@ -8,11 +8,12 @@ import com.example.pasteleriaapp.domain.model.CarritoItem
 
 @Entity(
     tableName = "carrito",
-    indices = [Index(value = ["idProducto", "mensajePersonalizado"], unique = true)]
+    indices = [Index(value = ["idUsuario", "idProducto", "mensajePersonalizado"], unique = true)]
 )
 data class CarritoItemEntity(
     @PrimaryKey(autoGenerate = true)
     val idCarrito: Int = 0,
+    val idUsuario: Int,
     val idProducto: Int,
     val nombreProducto: String,
     val precioProducto: Double,
@@ -24,6 +25,7 @@ data class CarritoItemEntity(
 
 fun CarritoItemEntity.toCarritoItem() = CarritoItem(
     idCarrito = idCarrito,
+    usuarioId = idUsuario,
     idProducto = idProducto,
     nombreProducto = nombreProducto,
     precioProducto = precioProducto,
@@ -34,6 +36,7 @@ fun CarritoItemEntity.toCarritoItem() = CarritoItem(
 
 fun CarritoItem.toCarritoItemEntity() = CarritoItemEntity(
     idCarrito = idCarrito,
+    idUsuario = usuarioId,
     idProducto = idProducto,
     nombreProducto = nombreProducto,
     precioProducto = precioProducto,

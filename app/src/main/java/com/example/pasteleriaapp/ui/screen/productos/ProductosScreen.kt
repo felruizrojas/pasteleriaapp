@@ -16,13 +16,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,7 +48,6 @@ fun ProductoListScreen(
     viewModel: ProductoViewModel,
     onBackClick: () -> Unit,
     onProductoClick: (Int) -> Unit,
-    onAddProductoClick: () -> Unit,
     badgeCount: Int,
     isLoggedIn: Boolean,
     topBarActions: AppTopBarActions,
@@ -64,12 +61,7 @@ fun ProductoListScreen(
         topBarActions = topBarActions,
         pageTitle = "Productos",
         onBackClick = onBackClick,
-        onLogout = onLogout,
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddProductoClick) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir Producto")
-            }
-        }
+        onLogout = onLogout
     ) { paddingValues ->
         Column(
             modifier = Modifier

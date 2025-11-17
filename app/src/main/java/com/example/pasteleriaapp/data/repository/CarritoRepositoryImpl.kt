@@ -13,16 +13,16 @@ class CarritoRepositoryImpl(
     private val dao: CarritoDao
 ) : CarritoRepository {
 
-    override fun obtenerItemsCarrito(): Flow<List<CarritoItem>> {
-        return dao.obtenerItemsCarrito().map { entities ->
+    override fun obtenerItemsCarrito(usuarioId: Int): Flow<List<CarritoItem>> {
+        return dao.obtenerItemsCarrito(usuarioId).map { entities ->
             entities.map { it.toCarritoItem() }
         }
     }
 
-    override suspend fun agregarAlCarrito(producto: Producto, cantidad: Int, mensaje: String) {
+    override suspend fun agregarAlCarrito(usuarioId: Int, producto: Producto, cantidad: Int, mensaje: String) {
         val mensajeNormalizado = mensaje.trim()
         val mensajeClave = mensajeNormalizado.takeIf { it.isNotBlank() } ?: ""
-        val itemExistente = dao.obtenerItemPorProductoYMensaje(producto.idProducto, mensajeClave)
+        val itemExistente = dao.obtenerItemPorProductoYMensaje(usuarioId, producto.idProducto, mensajeClave)
 
         if (itemExistente != null) {
             val itemActualizado = itemExistente.copy(
@@ -32,6 +32,7 @@ class CarritoRepositoryImpl(
             dao.actualizarItem(itemActualizado)
         } else {
             val nuevoItem = CarritoItem(
+                usuarioId = usuarioId,
                 idProducto = producto.idProducto,
                 nombreProducto = producto.nombreProducto,
                 precioProducto = producto.precioProducto,
@@ -43,30 +44,33 @@ class CarritoRepositoryImpl(
         }
     }
 
-    override suspend fun actualizarCantidadItem(item: CarritoItem, nuevaCantidad: Int) {
+    override suspend fun actualizarCantidadItem(usuarioId: Int, item: CarritoItem, nuevaCantidad: Int) {
+        if (item.usuarioId != usuarioId) return
         if (nuevaCantidad <= 0) {
-            eliminarItem(item)
+            eliminarItem(usuarioId, item)
         } else {
             val itemActualizado = item.copy(cantidad = nuevaCantidad).toCarritoItemEntity()
             dao.actualizarItem(itemActualizado)
         }
     }
 
-    override suspend fun eliminarItem(item: CarritoItem) {
+    override suspend fun eliminarItem(usuarioId: Int, item: CarritoItem) {
+        if (item.usuarioId != usuarioId) return
         dao.eliminarItem(item.toCarritoItemEntity())
     }
 
-    override suspend fun limpiarCarrito() {
-        dao.limpiarCarrito()
+    override suspend fun limpiarCarrito(usuarioId: Int) {
+        dao.limpiarCarrito(usuarioId)
     }
 
-    override suspend fun actualizarMensajeItem(idCarrito: Int, nuevoMensaje: String) {
+    override suspend fun actualizarMensajeItem(usuarioId: Int, idCarrito: Int, nuevoMensaje: String) {
         val mensajeNormalizado = nuevoMensaje.trim()
         val mensajeClave = mensajeNormalizado.takeIf { it.isNotBlank() } ?: ""
         val item = dao.obtenerItemPorId(idCarrito) ?: return
+        if (item.idUsuario != usuarioId) return
         if (item.mensajePersonalizado == mensajeClave) return
 
-        val potencialDuplicado = dao.obtenerItemPorProductoYMensaje(item.idProducto, mensajeClave)
+        val potencialDuplicado = dao.obtenerItemPorProductoYMensaje(usuarioId, item.idProducto, mensajeClave)
         if (potencialDuplicado != null && potencialDuplicado.idCarrito != item.idCarrito) {
             val actualizado = potencialDuplicado.copy(cantidad = potencialDuplicado.cantidad + item.cantidad)
             dao.actualizarItem(actualizado)

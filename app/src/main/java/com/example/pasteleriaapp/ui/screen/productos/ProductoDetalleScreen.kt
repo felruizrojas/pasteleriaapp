@@ -16,13 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -41,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.pasteleriaapp.R
 import com.example.pasteleriaapp.domain.model.Producto
+import com.example.pasteleriaapp.domain.model.Usuario
 import com.example.pasteleriaapp.ui.components.AppScaffold
 import com.example.pasteleriaapp.ui.components.AppTopBarActions
 import com.example.pasteleriaapp.ui.screen.auth.VoiceTextField
@@ -50,11 +49,12 @@ import com.example.pasteleriaapp.ui.viewmodel.ProductoDetalleViewModel
 fun ProductoDetalleScreen(
     viewModel: ProductoDetalleViewModel,
     onBackClick: () -> Unit,
-    onEditProductoClick: (Int) -> Unit,
     badgeCount: Int,
     isLoggedIn: Boolean,
     topBarActions: AppTopBarActions,
-    onLogout: (() -> Unit)?
+    onLogout: (() -> Unit)?,
+    usuario: Usuario?,
+    onRequireLogin: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -77,13 +77,6 @@ fun ProductoDetalleScreen(
         topBarActions = topBarActions,
         pageTitle = "Detalle del Producto",
         onBackClick = onBackClick,
-        headerActions = {
-            state.producto?.let { producto ->
-                IconButton(onClick = { onEditProductoClick(producto.idProducto) }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Editar Producto")
-                }
-            }
-        },
         onLogout = onLogout
     ) { paddingValues ->
         Box(
@@ -98,8 +91,13 @@ fun ProductoDetalleScreen(
                 state.error != null -> Text("Error: ${state.error}")
                 producto != null -> ProductoDetalle(
                     producto = producto,
-                    onAgregarAlCarrito = { mensaje ->
-                        viewModel.agregarAlCarrito(mensaje)
+                    usuario = usuario,
+                    onAgregarAlCarrito = { idUsuario, mensaje ->
+                        viewModel.agregarAlCarrito(idUsuario, mensaje)
+                    },
+                    onRequireLogin = {
+                        Toast.makeText(context, "Inicia sesión para agregar productos al carrito", Toast.LENGTH_SHORT).show()
+                        onRequireLogin()
                     }
                 )
                 else -> Text("Producto no encontrado.")
@@ -111,7 +109,9 @@ fun ProductoDetalleScreen(
 @Composable
 private fun ProductoDetalle(
     producto: Producto,
-    onAgregarAlCarrito: (String) -> Unit
+    usuario: Usuario?,
+    onAgregarAlCarrito: (Int, String) -> Unit,
+    onRequireLogin: () -> Unit
 ) {
     val context = LocalContext.current
     val imageResId = painterResourceFromName(context, producto.imagenProducto)
@@ -185,8 +185,13 @@ private fun ProductoDetalle(
 
             Button(
                 onClick = {
-                    onAgregarAlCarrito(mensajePersonalizado)
-                    mensajePersonalizado = ""
+                    val usuarioActual = usuario
+                    if (usuarioActual == null) {
+                        onRequireLogin()
+                    } else {
+                        onAgregarAlCarrito(usuarioActual.idUsuario, mensajePersonalizado)
+                        mensajePersonalizado = ""
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

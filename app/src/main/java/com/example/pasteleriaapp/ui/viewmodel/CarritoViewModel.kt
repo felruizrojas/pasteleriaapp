@@ -6,12 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.pasteleriaapp.domain.model.CarritoItem
 import com.example.pasteleriaapp.domain.repository.CarritoRepository
 import com.example.pasteleriaapp.ui.state.CarritoUiState
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CarritoViewModel(
@@ -21,21 +21,50 @@ class CarritoViewModel(
     private val _uiState = MutableStateFlow(CarritoUiState())
     val uiState: StateFlow<CarritoUiState> = _uiState.asStateFlow()
 
-    init {
-        cargarItemsCarrito()
-    }
+    private var usuarioActualId: Int? = null
+    private var observacionJob: Job? = null
 
-    private fun cargarItemsCarrito() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(estaCargando = true) }
+    fun observarCarrito(usuarioId: Int?) {
+        if (usuarioActualId == usuarioId) return
+        usuarioActualId = usuarioId
+        observacionJob?.cancel()
 
-            repository.obtenerItemsCarrito()
+        if (usuarioId == null) {
+            observacionJob = null
+            _uiState.value = CarritoUiState(
+                estaCargando = false,
+                items = emptyList(),
+                subtotal = 0.0,
+                requiereAutenticacion = true,
+                error = null
+            )
+            return
+        }
+
+        observacionJob = viewModelScope.launch {
+            _uiState.value = CarritoUiState(
+                estaCargando = true,
+                requiereAutenticacion = false
+            )
+            repository.obtenerItemsCarrito(usuarioId)
                 .map { items ->
                     val subtotal = items.sumOf { it.precioProducto * it.cantidad }
-                    CarritoUiState(estaCargando = false, items = items, subtotal = subtotal)
+                    CarritoUiState(
+                        estaCargando = false,
+                        items = items,
+                        subtotal = subtotal,
+                        requiereAutenticacion = false,
+                        error = null
+                    )
                 }
                 .catch { e ->
-                    _uiState.value = CarritoUiState(estaCargando = false, error = e.message)
+                    _uiState.value = CarritoUiState(
+                        estaCargando = false,
+                        items = emptyList(),
+                        subtotal = 0.0,
+                        requiereAutenticacion = false,
+                        error = e.message
+                    )
                 }
                 .collect { state ->
                     _uiState.value = state
@@ -44,27 +73,36 @@ class CarritoViewModel(
     }
 
     fun actualizarCantidad(item: CarritoItem, nuevaCantidad: Int) {
+        val usuarioId = usuarioActualId ?: return
         viewModelScope.launch {
-            repository.actualizarCantidadItem(item, nuevaCantidad)
+            repository.actualizarCantidadItem(usuarioId, item, nuevaCantidad)
         }
     }
 
     fun eliminarItem(item: CarritoItem) {
+        val usuarioId = usuarioActualId ?: return
         viewModelScope.launch {
-            repository.eliminarItem(item)
+            repository.eliminarItem(usuarioId, item)
         }
     }
 
     fun limpiarCarrito() {
+        val usuarioId = usuarioActualId ?: return
         viewModelScope.launch {
-            repository.limpiarCarrito()
+            repository.limpiarCarrito(usuarioId)
         }
     }
 
     fun actualizarMensaje(item: CarritoItem, nuevoMensaje: String) {
+        val usuarioId = usuarioActualId ?: return
         viewModelScope.launch {
-            repository.actualizarMensajeItem(item.idCarrito, nuevoMensaje)
+            repository.actualizarMensajeItem(usuarioId, item.idCarrito, nuevoMensaje)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        observacionJob?.cancel()
     }
 }
 

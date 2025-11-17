@@ -37,12 +37,12 @@ class ProductoDetalleViewModel(
         }
     }
 
-    fun agregarAlCarrito(mensaje: String) {
+    fun agregarAlCarrito(usuarioId: Int, mensaje: String) {
         val producto = _uiState.value.producto ?: return
 
         viewModelScope.launch {
             try {
-                carritoRepository.agregarAlCarrito(producto, 1, mensaje)
+                carritoRepository.agregarAlCarrito(usuarioId, producto, 1, mensaje)
                 _uiState.update { it.copy(itemAgregado = true) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
